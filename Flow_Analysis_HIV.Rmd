@@ -1,0 +1,100 @@
+---
+title: "A Shiny Document"
+author: "Kuei Yueh (Clint) Ko"
+date: "April 15, 2018"
+runtime: shiny
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(flowCore)
+library(flowViz)
+library(ggcyto)
+```
+
+```{r}
+fcdir  <- "/media/clint/Data/GitRepo/BIOS822_FinalProj/data_test"
+fclist <- dir(fcdir)
+```
+
+```{r}
+fs <- read.flowSet(file.path(fcdir, fclist), transformation = FALSE)
+print(class(fs))
+print(length(fs))
+print(fs)
+```
+
+```{r}
+fs1 <- fs[[1]]
+print(class(fs1))
+print(length(fs1))
+print(fs1)
+```
+
+
+```{r}
+expr <- exprs(fs1)
+dim(expr)
+```
+
+
+```{r}
+#library(shiny)
+library(networkD3)
+
+data(MisLinks)
+data(MisNodes)
+```
+
+
+```{r}
+x <- matrix(rnorm(100), 4, 25)
+```
+
+
+```{r, echo=FALSE}
+#### Server ####
+server <- function(input, output) {
+
+  output$simple <- renderSimpleNetwork({
+    src <- c("A", "A", "A", "A", "B", "B", "C", "C", "D")
+    target <- c("B", "C", "D", "J", "E", "F", "G", "H", "I")
+    networkData <- data.frame(src, target)
+    simpleNetwork(networkData, opacity = input$opacity)
+  })
+
+  output$force <- renderForceNetwork({
+    forceNetwork(Links = MisLinks, Nodes = MisNodes, Source = "source",
+                 Target = "target", Value = "value", NodeID = "name",
+                 Group = "group", opacity = input$opacity)
+  })
+
+}
+
+#### UI ####
+
+ui <- shinyUI(fluidPage(
+
+  titlePanel("Shiny networkD3 "),
+
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("opacity", "Opacity (not for Sankey)", 0.6, min = 0.1,
+                    max = 1, step = .1)
+    ),
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Simple Network", simpleNetworkOutput("simple")),
+        tabPanel("Force Network", forceNetworkOutput("force"))
+      )
+    )
+  )
+))
+```
+
+```{r, echo = FALSE}
+#### Run ####
+shinyApp(ui = ui, server = server)
+```
+
