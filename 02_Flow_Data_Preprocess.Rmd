@@ -1,0 +1,152 @@
+---
+title: "Notebook 02: Flow Data Preprocess"
+output: html_notebook
+---
+
+# Setup environment
+
+import needed library
+```{r}
+library(parallel)
+library(flowCore)
+library(rbenchmark)
+```
+
+setup required directory and file names
+```{r}
+datadir <- "/data/Flow_HIV"
+#load(file.path(datadir, "FlowHIV_Raw.RData"))
+fclist <- dir(datadir)
+fclist <- fclist[grepl("fcs", fclist)]
+```
+
+# Preprocess: Compensation and Transformation
+
+
+### Compensation
+The emission wavelength of different fluorochrome usually overlap to each other. That is, the multiple fluorescence spectra may be detected by one flurochrome. Since we need to get the values of each flurorochrome, the spectral overlap should be corrected. The process of compensation is performed as follow:
+
+- get the raw data matrix $X$  
+- get the spill matrix $M$  
+- compensation $X \times M^{-1}$
+
+Reference
+- [Fluorescence compensation in flow cytometry](http://www.abcam.com/protocols/fluorescence-compensation-in-flow-cytometry)
+- [How To Compensate A 4-Color Flow Cytometry Experiment Correctly](https://expertcytometry.com/how-to-compensate-a-4-color-flow-cytometry-experiment-correctly/)
+
+### Transformation
+
+
+
+### Preprocess the data using parallel computing
+
+```{r}
+preprocess_flowdata <- function(fdat_raw){
+    # Parameter:
+    #     idx --- (int) index
+    #     data --- default to the flow data set "fs"
+    # Return:
+    #     fdat_trans --- (flowFrame) preprocessed fcs data
+    ###########################
+    spill      <- fdat_raw@description$'SPILL'
+    fdat_comp  <- compensate(fdat_raw, spill)
+    fdat_trans <- transform(
+        fdat_comp, 
+        transformList(colnames(fdat_comp)[4:16], asinh))
+    return(fdat_trans)
+}
+```
+
+```{r}
+read_preprocess_flowdata <- function(file_name){
+    # Parameter:
+    #     file_name --- (str) fcs file name 
+    # Return:
+    #     fdat_trans --- (flowFrame) preprocessed fcs data
+    ####################
+    fdat_raw   <- read.FCS(file.path(datadir, file_name), transformation = FALSE)
+    fdat_trans <- preprocess_flowdata(fdat_raw)
+    return(fdat_trans)
+} # end func read_preprocess_flowdata
+```
+
+Check the number of cores
+```{r}
+detectCores()
+```
+
+The code below compare the time spended between preprocessing with and without parallel computing  
+It turns out that the preprocessing without parallel computing (~49.4s) is 2.08 longer than preprocessing with parallel computing (23.7s).
+```{r}
+dat_timer_results <- benchmark(
+    lapply(  X = fclist[1:20], FUN = read_preprocess_flowdata),
+    mclapply(X = fclist[1:20], FUN = read_preprocess_flowdata, mc.cores=detectCores()-1),
+    replications = 5,
+    order = "relative"
+)
+dat_timer_results
+```
+
+
+Preprocess data without parallel computing
+```{r}
+fs_trans <- lapply(X = fclist, FUN = read_preprocess_flowdata)
+fs_trans <- flowSet(fs_trans)
+```
+
+Preprocess data with parallel computing
+```{r}
+fs_trans <- mclapply(X = fclist, FUN = read_preprocess_flowdata, mc.cores=detectCores()-1)
+fs_trans <- flowSet(fs_trans)
+```
+
+print out the results
+```{r}
+fs_trans
+```
+
+
+store the results
+```{r}
+save(fs_trans, file=file.path(datadir, "FlowHIV_Preprocessed.RData"))
+```
+
+# Subset for example
+
+```{r}
+tmp <- read.flowSet(file.path(datadir, fclist[1:2]))
+                    #X = fclist[1:10], FUN = read_preprocess_flowdata)
+names(fs_trans_subset10) <- fclist[1:10]
+fs_trans_subset10 <- flowSet(fs_trans_subset10)
+fs_trans_subset10
+```
+
+preprocess 10 samples for further exploratory data analysis
+```{r}
+fs_trans_subset10 <- lapply(X = fclist[1:10], FUN = read_preprocess_flowdata)
+names(fs_trans_subset10) <- fclist[1:10]
+fs_trans_subset10 <- flowSet(fs_trans_subset10)
+fs_trans_subset10
+```
+
+store the results
+```{r}
+save(fs_trans_subset10, file=file.path(datadir, "FlowHIV_Preprocessed_subset10.RData"))
+```
+
+preprocess 100 samples for further exploratory data analysis
+```{r}
+fs_trans_subset100 <- lapply(X = fclist[1:100], FUN = read_preprocess_flowdata)
+names(fs_trans_subset100) <- fclist[1:100]
+fs_trans_subset100 <- flowSet(fs_trans_subset100)
+fs_trans_subset100
+```
+
+store the results
+```{r}
+save(fs_trans_subset100, file=file.path(datadir, "FlowHIV_Preprocessed_subset100.RData"))
+```
+
+
+
+

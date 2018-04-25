@@ -1,0 +1,219 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Setup environment
+
+import needed library
+```{r}
+library(tidyverse)
+library(flowCore)
+library(flowViz)
+library(ggcyto)
+library(pheatmap)
+library(networkD3)
+library(shiny)
+```
+
+setup required directory
+```{r}
+datadir <- "/data/Flow_HIV"
+#load(file.path(datadir, "FlowHIV_Preprocessed.RData"))
+load(file.path(datadir, "FlowHIV_Preprocessed_subset100.RData"))
+```
+
+# Read in the clinical data of each patient
+
+The clinical data contains the survival time and death of each patient.
+```{r}
+dat_clinic <- read_delim(
+    file.path(datadir, "attachments", "clinical_data_flow_repository.csv"),
+    delim = "\t")
+```
+
+```{r}
+head(dat_clinic)
+```
+
+```{r}
+dat <- dat_clinic
+dat <- dat %>% arrange(`Survival time`)
+dat$ID <- as.character(dat$ID)
+dat$ID <- factor(dat$ID, levels = dat$ID)
+id <- "548988"
+
+dat$choose <- ifelse(dat$ID %in% id, "Chosen", "Not_Chosen")
+idx <- which(dat$choose == "Chosen")
+
+ggplot(dat[], aes(
+    x = ID, 
+    y = `Survival time`,
+    fill = choose)) + 
+    geom_histogram(stat = "identity") +
+    scale_fill_manual(
+        "legend", 
+        values = c("Chosen" = "#fbb4ae", "Not_Chosen" = "grey50")) +
+    geom_vline(xintercept=idx, color = "red") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+
+```{r}
+fdat <- fs_trans_subset100[[1]]
+print(splom(fdat))
+```
+
+```{r}
+autoplot(fdat)
+```
+
+
+```{r}
+expr <- exprs(fdat)
+print(sum(expr[, "FSC-A"] < 0))
+print(sum(expr[, "FSC-H"] < 0))
+print(sum(expr[, "SSC-A"] < 0))
+```
+
+
+
+```{r}
+pheatmap(
+  mat               = expr[1:100,4:16],
+  color             = inferno(10),
+  border_color      = NA,
+  show_colnames     = FALSE,
+  show_rownames     = FALSE,
+  #annotation_col    = mat_col,
+  #annotation_colors = mat_colors,
+  drop_levels       = TRUE,
+  fontsize          = 14,
+  main              = "Default Heatmap"
+)
+```
+
+```{r}
+expr <- data.frame(exprs(fdat))
+expr_scaled <- apply(expr, 2, scale)
+```
+
+
+```{r}
+idx <- sample(1:nrow(expr), floor(0.01 * nrow(expr)))
+pheatmap(
+  mat               = expr[idx, 4:16],
+  color             = inferno(10),
+  border_color      = NA,
+  show_colnames     = FALSE,
+  show_rownames     = FALSE,
+  #annotation_col    = mat_col,
+  #annotation_colors = mat_colors,
+  drop_levels       = TRUE,
+  fontsize          = 14,
+  main              = "Default Heatmap"
+)
+```
+
+
+```{r}
+mat_dist <- dist(expr_scaled[idx, 4:16])
+mat_sim  <- 1 / (as.matrix(mat_dist) + 1)
+diag(mat_sim) <- 0
+```
+
+```{r}
+cutoff <- 0.5
+adj   <- ifelse(mat_sim > cutoff, 1, 0)
+links <- melt(adj)
+links <- links[links$value == 1, ]
+```
+
+```{r}
+simpleNetwork(links,
+            #fontSize     = input$fontSize,
+            #charge       = input$charge,
+            linkDistance = 0.001
+            #opacity      = input$opacity)
+)
+```
+
+
+```{r}
+#### Load necessary packages and data ####
+data(MisLinks)
+data(MisNodes)
+
+#### Server ####
+server <- function(input, output) {
+
+    output$simple <- renderSimpleNetwork({
+         src <- c("A", "A", "A", "A", "B", "B", "C", "C", "D")
+         target <- c("B", "C", "D", "J", "E", "F", "G", "H", "I")
+         networkData <- data.frame(src, target)
+         simpleNetwork(networkData, opacity = input$opacity)
+    }) # end render SimpleNetwork
+
+    output$force <- renderForceNetwork({
+        forceNetwork(
+            Links = MisLinks, Nodes = MisNodes, Source = "source",
+            Target = "target", Value = "value", NodeID = "name",
+            Group = "group", opacity = input$opacity)
+    }) # end render ForceNetwork
+
+} # end server
+
+#### UI ####
+
+ui <- shinyUI(fluidPage(
+    # title
+    titlePanel("Shiny networkD3 "),
+    
+    # sideLayout
+    sidebarLayout(
+        sidebarPanel(
+        sliderInput(
+            "opacity", "Opacity (not for Sankey)", 0.6, min = 0.1,
+            max = 1, step = .1)
+        ),
+        mainPanel(
+            tabsetPanel(
+            tabPanel("Simple Network", simpleNetworkOutput("simple")),
+            tabPanel("Force Network", forceNetworkOutput("force"))
+            ) # end tabsetPanel
+        ) # end main Panel
+    ) # end sidebarLayout
+)) # end fluidPage & ShinyUI
+
+#### Run ####
+shinyApp(ui = ui, server = server)
+```
+
+```{r}
+library(Rtsne) # Load package
+iris_unique <- unique(iris) # Remove duplicates
+set.seed(42) # Sets seed for reproducibility
+tsne_out <- Rtsne(as.matrix(iris_unique[,1:4])) # Run TSNE
+plot(tsne_out$Y,col=iris_unique$Species) # Plot the result
+```
+
+```{r}
+fdat <- fs_trans_subset10[[1]]
+expr <- exprs(fdat)
+dim(expr)
+```
+
+
+```{r}
+tsne_out = Rtsne(expr[1:2000, ])
+plot(tsne_out$Y)
+```
+
+```{r}
+library(survminer)
+library(survival)
+
+fit <- survfit(Surv(time, status) ~ sex, data = lung)
+ggsurvplot(fit, data = lung)
+```
+

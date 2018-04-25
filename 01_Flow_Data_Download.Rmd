@@ -1,0 +1,72 @@
+---
+title: "Notebook 01: Download Flow Data"
+output: html_notebook
+---
+
+# Setup environment
+
+import needed library
+```{r}
+library(FlowRepositoryR)
+```
+
+directory
+```{r}
+datadir <- "/data/Flow_HIV"
+```
+
+
+# Summary information of Flow Repository
+
+- Repository:
+    - Experiment: IDCRP's HIV Natural History Study 
+    - ID: FR-FCM-ZZZK 
+    - Primary Researcher: Nima Aghaeepour
+- Purpose:
+    - PFC analysis of 466 subjects enrolled in Infectious Disease Clinical Research Program's Natural History Study
+- Link: http://flowrepository.org/id/FR-FCM-ZZZK
+```{r}
+flowRep.search("FR-FCM-ZZZK")
+```
+
+information of FR-FCM-ZZZK
+```{r}
+# data summary of flow repository FR-FCM-ZZZK
+dat_sum <- flowRep.get("FR-FCM-ZZZK"); cat("\n")
+summary(dat_sum)
+```
+
+# Download the files
+
+for more information, the files can be downloaded from the website:   
+http://flowrepository.org/experiments/20/download_ziped_files
+
+```{r}
+dat_sum  <- flowRep.get("FR-FCM-ZZZK")
+dat_file <- download(dat_sum, dirpath = datadir)
+```
+
+# Read in the fcs files
+
+Number of fcs files; check if there are 466 fcs files
+```{r}
+system("ls /data/Flow_HIV/*.fcs | wc -l")
+```
+
+print out the files in directory
+```{r}
+fclist <- dir(datadir)
+fclist <- fclist[grepl("fcs", fclist)]
+fclist
+```
+
+read in a whole set of fcs files 
+```{r}
+fs <- read.flowSet(file.path(datadir, fclist), transformation = FALSE)
+```
+
+Store the result
+```{r}
+save(fs, file=file.path(datadir, "FlowHIV_Raw.RData"))
+```
+
