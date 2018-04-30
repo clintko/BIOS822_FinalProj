@@ -10,10 +10,18 @@ import needed library
 library(FlowRepositoryR)
 ```
 
-directory
+setup directory
 ```{r}
+# The directory to store the dataset
 datadir <- "/data/Flow_HIV"
 ```
+
+install packages
+```{r}
+
+```
+
+
 
 
 # Summary information of Flow Repository
