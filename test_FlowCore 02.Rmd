@@ -1,0 +1,171 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+############################
+my function preprocess the flowFrame
+
+```{r}
+preprocess_flowdata <- function(fdat_raw){
+    # Parameter:
+    #     idx --- (int) index
+    #     data --- default to the flow data set "fs"
+    # Return:
+    #     fdat_trans --- (flowFrame) preprocessed fcs data
+    ###########################
+    spill      <- fdat_raw@description$'SPILL'
+    fdat_comp  <- compensate(fdat_raw, spill)
+    fdat_trans <- transform(
+        fdat_comp, 
+        transformList(colnames(fdat_comp)[4:16], asinh))
+    return(fdat_trans)
+}
+```
+
+```{r}
+read_preprocess_flowdata <- function(file_name){
+    # Parameter:
+    #     file_name --- (str) fcs file name 
+    # Return:
+    #     fdat_trans --- (flowFrame) preprocessed fcs data
+    ####################
+    fdat_raw   <- read.FCS(file.path(datadir, file_name), transformation = FALSE)
+    fdat_trans <- preprocess_flowdata(fdat_raw)
+    return(fdat_trans)
+} # end func read_preprocess_flowdata
+```
+
+#################################
+Using Bioconductor with High Throughput Assays
+https://www.bioconductor.org/help/workflows/highthroughputassays/
+
+```{r}
+## Load packages
+library(flowCore)
+library(flowStats)
+library(flowViz) # for flow data visualization
+```
+
+```{r}
+## Load data
+data(ITN)
+ITN
+
+## A flowSet with 15 experiments.
+## 
+## An object of class 'AnnotatedDataFrame'
+##   rowNames: sample01 sample02 ... sample15 (15 total)
+##   varLabels: GroupID SiteCode ... name (7 total)
+##   varMetadata: labelDescription
+## 
+##   column names:
+##   FSC SSC CD8 CD69 CD4 CD3 HLADr Time
+```
+
+```{r}
+## Create a workflow instance and transform data using asinh
+wf <- workFlow(ITN)
+
+## Warning: 'workFlow' is deprecated.
+## Use 'flowWorkspace::GatingSet' instead.
+## See help("Deprecated")
+
+asinh <- arcsinhTransform()
+tl <- transformList(colnames(ITN)[3:7], asinh, 
+                      transformationId = "asinh")
+add(wf, tl)
+```
+
+```{r}
+## Identify T-cells population
+lg <- lymphGate(Data(wf[["asinh"]]), channels=c("SSC", "CD3"),
+         preselection="CD4", filterId="TCells", eval=FALSE,
+         scale=2.5)
+add(wf, lg$n2gate, parent="asinh")
+print(xyplot(SSC ~ CD3| PatientID, wf[["TCells+"]],
+             par.settings=list(gate=list(col="red", 
+             fill="red", alpha=0.3))))
+
+## Note: method with signature 'filter#missing' chosen for function 'glpolygon',
+##  target signature 'logicalFilterResult#missing'.
+##  "filterResult#ANY" would also be valid
+```
+
+################################################
+Flow cytometry data analysis using Bioconductor
+https://www.bioconductor.org/help/workflows/highthroughputassays/flowWorkFlow.pdf
+
+```{r}
+library(flowCore)
+library(flowQ)
+library(flowViz)
+library(flowStats)
+```
+
+```{r}
+flowData <- fs_sub
+```
+
+```{r}
+pData(parameters(flowData[[1]]))
+```
+
+```{r}
+print(splom(flowData[[1]]))
+```
+
+```{r}
+print(length(colnames(flowData)))
+colnames(flowData)
+```
+
+
+```{r}
+tData <- transform(flowData, transformList(colnames(flowData)[4:16], asinh))
+```
+
+```{r}
+print(splom(tData[[1]]))
+```
+
+```{r}
+print(xyplot(`V655-A` ~ `V800-A`, data = tData))
+```
+
+```{r}
+densityplot(
+    ~ `V655-A`, tData,
+    main="My density plot of V655-A")
+```
+
+
+```{r}
+flowData[[1]]
+```
+
+```{r}
+pData(flowData)
+```
+
+
+```{r}
+myplot <-densityplot(
+    name ~ ., tData,
+    channels=c("R780-A", "V655-A", "V800-A"), 
+    #scales=list(y=list(draw=F)),
+    #filter=lapply(c(�CD3�,�CD4�,�CD8�), curv1Filter),
+    layout=c(3,1))
+myplot
+```
+
+try normalization
+```{r}
+norm <- normalization(
+    normFun=function(x, parameters, ...)
+    warpSet(x, parameters,...),
+    parameters=pars,
+    normalizationId="Warping")
+```
+
+

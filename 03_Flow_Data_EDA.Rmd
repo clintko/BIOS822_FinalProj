@@ -1,26 +1,31 @@
 ---
-title: "R Notebook"
+title: "Notebook 03: Exploratory data analysis"
 output: html_notebook
 ---
+
+# Goal:
+In this notebook, 
 
 # Setup environment
 
 import needed library
-```{r}
+```{r, message = FALSE}
 library(tidyverse)
-library(flowCore)
-library(flowViz)
-library(ggcyto)
-library(pheatmap)
-library(networkD3)
-library(shiny)
+library(survival)  # library for survival analysis
+library(rms)       # library for survival analysis
+library(flowCore)  # library for processing  flow dataset
+library(flowViz)   # library for visualizing flow dataset
+library(ggcyto)    # library for visualizing flow dataset
+library(pheatmap)  # library for plotting heatmap
+library(networkD3) # library for plotting network
 ```
 
 setup required directory
 ```{r}
 datadir <- "/data/Flow_HIV"
+load(file.path(datadir, "FlowHIV_Preprocessed_subset10.RData"))
+#load(file.path(datadir, "FlowHIV_Preprocessed_subset100.RData"))
 #load(file.path(datadir, "FlowHIV_Preprocessed.RData"))
-load(file.path(datadir, "FlowHIV_Preprocessed_subset100.RData"))
 ```
 
 # Read in the clinical data of each patient
@@ -30,37 +35,60 @@ The clinical data contains the survival time and death of each patient.
 dat_clinic <- read_delim(
     file.path(datadir, "attachments", "clinical_data_flow_repository.csv"),
     delim = "\t")
+
+colnames(dat_clinic)[2] <- "Surv_Time"
+#dat_clinic <- dat_clinic %>% rename(Surv_Time = `Survival Time`)
+dat_clinic$Surv_Obj <- with(dat_clinic, Surv(Surv_Time))
 ```
 
 ```{r}
 head(dat_clinic)
 ```
 
+# Survival Analysis
+
+Visualize the survival time in order
 ```{r}
 dat <- dat_clinic
-dat <- dat %>% arrange(`Survival time`)
+dat <- dat %>% arrange(Surv_Time)
 dat$ID <- as.character(dat$ID)
 dat$ID <- factor(dat$ID, levels = dat$ID)
-id <- "548988"
+#id <- "548988"
 
-dat$choose <- ifelse(dat$ID %in% id, "Chosen", "Not_Chosen")
-idx <- which(dat$choose == "Chosen")
+#dat$choose <- ifelse(dat$ID %in% id, "Chosen", "Not_Chosen")
+#idx <- which(dat$choose == "Chosen")
 
-ggplot(dat[], aes(
-    x = ID, 
-    y = `Survival time`,
-    fill = choose)) + 
+ggplot(dat, aes(x = ID, y = Surv_Time)) + 
     geom_histogram(stat = "identity") +
-    scale_fill_manual(
-        "legend", 
-        values = c("Chosen" = "#fbb4ae", "Not_Chosen" = "grey50")) +
-    geom_vline(xintercept=idx, color = "red") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    theme(axis.text.x = element_blank())#element_text(angle = 90, hjust = 1))
+```
+
+Fit the survival model
+```{r}
+fit = npsurv(formula = Surv(Surv_Time) ~ 1, data = dat_clinic)
+# The code below no longer work
+# http://rstudio-pubs-static.s3.amazonaws.com/16003_8d6f2069af094998bfbb3d3a7dfb1c17.html
+#fit <- survfit(
+#    Surv_Obj ~ 1, 
+#    data = dat_clinic, 
+#    conf.type = "log-log")
+#survplot(fit)
+```
+
+Kaplan-meier curve
+```{r}
+survplot(
+    fit, 
+    conf = c("none","bands","bars")[2],
+    label.curves = TRUE,
+    dots = TRUE,
+    n.risk   = TRUE,
+    time.inc = 1000)
 ```
 
 
-```{r}
-fdat <- fs_trans_subset100[[1]]
+```{r, warning = FALSE}
+fdat <- fs_trans_subset10[[1]]
 print(splom(fdat))
 ```
 

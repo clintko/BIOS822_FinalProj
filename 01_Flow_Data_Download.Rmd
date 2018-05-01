@@ -3,10 +3,14 @@ title: "Notebook 01: Download Flow Data"
 output: html_notebook
 ---
 
+# Goal
+In this Project, I am going to performed exploratory data analysis on HIV flow cytometry dataset. In this notebook, I used the code to get the information of dataset (ID: FR-FCM-ZZZK) from flow repository. In addition, the code will download the package I wrote, which includes important functions that would be used in the project.
+
 # Setup environment
 
 import needed library
 ```{r}
+# FlowRepositoryR library is needed to download data from flow repository
 library(FlowRepositoryR)
 ```
 
@@ -16,15 +20,22 @@ setup directory
 datadir <- "/data/Flow_HIV"
 ```
 
-install packages
+In this project I have created additional helper functions and organized them into a package
 ```{r}
+# install the helper package
+library(devtools)
+install_github("clintko/bios822FinalProjPackages", force = TRUE)
 
+# import the library
+library(bios822FinalProjPackages)
+
+# Check if the package is installed.
+hello()
 ```
 
-
-
-
 # Summary information of Flow Repository
+
+Below is the summary of the dataset:
 
 - Repository:
     - Experiment: IDCRP's HIV Natural History Study 
@@ -33,11 +44,16 @@ install packages
 - Purpose:
     - PFC analysis of 466 subjects enrolled in Infectious Disease Clinical Research Program's Natural History Study
 - Link: http://flowrepository.org/id/FR-FCM-ZZZK
+- Citation:
+    - Aghaeepour N (2012) IDCRP's HIV Natural History Study data set.
+    - Aghaeepour N (2012) Early immunologic correlates of HIV protection can be identified from computational analysis of complex multivariate T-cell flow cytometry assays
+
 ```{r}
+# Search if the flow repository ID "FR-FCM-ZZZK" exist
 flowRep.search("FR-FCM-ZZZK")
 ```
 
-information of FR-FCM-ZZZK
+information of flow repository dataset FR-FCM-ZZZK
 ```{r}
 # data summary of flow repository FR-FCM-ZZZK
 dat_sum <- flowRep.get("FR-FCM-ZZZK"); cat("\n")
@@ -46,7 +62,7 @@ summary(dat_sum)
 
 # Download the files
 
-for more information, the files can be downloaded from the website:   
+The command below downloads the dataset from flow repository. The size of files is around 60 Gb in total. For more information, the files can be downloaded from the website:   
 http://flowrepository.org/experiments/20/download_ziped_files
 
 ```{r}
@@ -55,13 +71,15 @@ dat_file <- download(dat_sum, dirpath = datadir)
 ```
 
 # Read in the fcs files
+Here I check the if the files are downloaded correctly from the flow repository. I have also stored the total dataset into a workspace. 
 
 Number of fcs files; check if there are 466 fcs files
 ```{r}
+# bash command to see how many fcs files in the folder
 system("ls /data/Flow_HIV/*.fcs | wc -l")
 ```
 
-print out the files in directory
+print out the files in directory to double check if the files are downloaded currectly
 ```{r}
 fclist <- dir(datadir)
 fclist <- fclist[grepl("fcs", fclist)]
@@ -75,6 +93,18 @@ fs <- read.flowSet(file.path(datadir, fclist), transformation = FALSE)
 
 Store the result
 ```{r}
+# save the whole dataset into a workspace
 save(fs, file=file.path(datadir, "FlowHIV_Raw.RData"))
 ```
 
+In addition, I have read a subset of fcs files for demontration.
+```{r}
+# read in the first 10 files
+fs_sub <- read.flowSet(file.path(datadir, fclist[1:10]), transformation = FALSE)
+```
+
+Store the result
+```{r}
+# save the sub-dataset into a workspace
+save(fs_sub, file=file.path(datadir, "FlowHIV_Raw_subset10.RData"))
+```

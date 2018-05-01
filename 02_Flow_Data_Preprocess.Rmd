@@ -3,28 +3,37 @@ title: "Notebook 02: Flow Data Preprocess"
 output: html_notebook
 ---
 
+# Goal
+In this notebook, I used the code to preprocess each raw fcs file. The preprocess includes compensation and transformation. I would briefly describe the process of preprocessing the data and visualize the data before and after preprocssing via ggplot. Furthermore, I would compare the preprocessing with and without parallel computing. Note that the data was preprocessed via functional programming in R.
+
+
 # Setup environment
 
 import needed library
 ```{r}
-library(parallel)
-library(flowCore)
-library(rbenchmark)
+library(tidyverse)
+library(RColorBrewer)
+library(flowCore)   # library for processing flow dataset
+library(parallel)   # library for parallel processing
+library(rbenchmark) # library for comparing functions' processing time
+
+# my library for flow preprocessing
+library(bios822FinalProjPackages) 
 ```
 
 setup required directory and file names
 ```{r}
 datadir <- "/data/Flow_HIV"
-#load(file.path(datadir, "FlowHIV_Raw.RData"))
 fclist <- dir(datadir)
 fclist <- fclist[grepl("fcs", fclist)]
 ```
 
-# Preprocess: Compensation and Transformation
+# Introduction of Preprocess FCS Files
 
+Before analysis, a raw fcs file should be properly compensated and transformed. The compensation is preformed to deal with the overlap of emission fluorescence of different flurochrome. The goal of the transformation is to rescale values of measured by fluroescence detectors since the distributions of measurements in flow cytometry is heavily-skewed.
 
 ### Compensation
-The emission wavelength of different fluorochrome usually overlap to each other. That is, the multiple fluorescence spectra may be detected by one flurochrome. Since we need to get the values of each flurorochrome, the spectral overlap should be corrected. The process of compensation is performed as follow:
+The emission wavelength of different fluorochrome usually overlap to each other. That is, multiple fluorescence spectra may be detected by one flurochrome. Since we need to get the values of each flurorochrome, the spectral overlap should be corrected. The process of compensation is performed as follow:
 
 - get the raw data matrix $X$  
 - get the spill matrix $M$  
@@ -36,67 +45,105 @@ Reference
 
 ### Transformation
 
+Due to the heavily-skewed flow cytometry measurements, transformation of flow cytometry measurements is performed before analysis. Different transformation methods have been proposed. Here I listed some some of them.:
 
+- Biexponential Transformation
+- Box-Cox Transformation
+- Arcsinh Transformation
+- Linear-to-Log Transformation
 
-### Preprocess the data using parallel computing
+Here I used the arcsinh transformation.
 
+# Preprocess FCS File --- Compensation and Transformation
+
+Here I will use the subset of HIV flow cytometry data to demonstrate how compensation and transformation is performed.
 ```{r}
-preprocess_flowdata <- function(fdat_raw){
-    # Parameter:
-    #     idx --- (int) index
-    #     data --- default to the flow data set "fs"
-    # Return:
-    #     fdat_trans --- (flowFrame) preprocessed fcs data
-    ###########################
-    spill      <- fdat_raw@description$'SPILL'
-    fdat_comp  <- compensate(fdat_raw, spill)
-    fdat_trans <- transform(
-        fdat_comp, 
-        transformList(colnames(fdat_comp)[4:16], asinh))
-    return(fdat_trans)
-}
+# load the subset of data, which contains 10 dataset
+# the flowSet instance is stored in the variable "fs_sub"
+load(file.path(datadir, "FlowHIV_Raw_subset10.RData"))
 ```
 
+print out the markers
 ```{r}
-read_preprocess_flowdata <- function(file_name){
-    # Parameter:
-    #     file_name --- (str) fcs file name 
-    # Return:
-    #     fdat_trans --- (flowFrame) preprocessed fcs data
-    ####################
-    fdat_raw   <- read.FCS(file.path(datadir, file_name), transformation = FALSE)
-    fdat_trans <- preprocess_flowdata(fdat_raw)
-    return(fdat_trans)
-} # end func read_preprocess_flowdata
+colnames(fs_sub)
 ```
 
-Check the number of cores
+Compensation & Transformation
 ```{r}
-detectCores()
+fdat_raw   <- fs_sub[[1]]
+fdat_trans <- preprocess_flowdata(fdat_raw, colnames(fs_sub)[4:16])
 ```
 
-The code below compare the time spended between preprocessing with and without parallel computing  
-It turns out that the preprocessing without parallel computing (~49.4s) is 2.08 longer than preprocessing with parallel computing (23.7s).
+### Observe the data before and after preprocessing using markers CD3 and CD8.
+- R780-A --- CD3 
+- V800-A --- CD8
+
+Below is the visualization before preprocessing. Notice that the data points are squeezed in the left below corner.
 ```{r}
+# Before preprocessing
+tmp <- fdat_raw[, c("R780-A", "V800-A")]
+color_pal <- colorRampPalette(rev(brewer.pal(9, "Spectral")))
+gp  <- tmp %>% 
+    exprs %>% 
+    as.tibble %>%
+    ggplot(aes(x = `R780-A`, y = `V800-A`)) +
+    geom_hex() +
+    scale_fill_gradientn(colours = color_pal(50))
+print(gp)
+```
+
+Below is the plot after processing. Notice that it is normal to observe some data points where markers have measurements smaller than zero. Most of the cells (47951/65016 > 70%) are at the first quadrant.
+```{r}
+# After processing
+tmp <- fdat_trans[, c("R780-A", "V800-A")]
+color_pal <- colorRampPalette(rev(brewer.pal(9, "Spectral")))
+gp  <- tmp %>% 
+    exprs %>% 
+    as.tibble %>%
+    ggplot(aes(x = `R780-A`, y = `V800-A`)) +
+    geom_hex() +
+    scale_fill_gradientn(colours = color_pal(50))
+print(gp)
+```
+
+
+### Compare the Preprocessing with and without parallel computing
+
+The code below compare the time spended between preprocessing with and without parallel computing. It turns out that the preprocessing without parallel computing (~10.2s) is 1.27 longer than preprocessing with parallel computing (~13.0s). It is worth mentioned that as the number of data increase, the difference becomes more dramatic. For example, when processing 20 files, the preprocessing without parallel computing (~49.4s) becomes 2.08 longer than preprocessing with parallel computing (23.7s).
+
+```{r}
+# Since R is a functional programming language, the function can be decorated and passed as argument
+func <- function(file_name){read_preprocess_flowdata(file_name, colnames(fs_sub)[4:16])}
+
+# measure and compare the execution time
 dat_timer_results <- benchmark(
-    lapply(  X = fclist[1:20], FUN = read_preprocess_flowdata),
-    mclapply(X = fclist[1:20], FUN = read_preprocess_flowdata, mc.cores=detectCores()-1),
+    lapply(  X = fclist[1:5], FUN = func),
+    mclapply(X = fclist[1:5], FUN = func, mc.cores=detectCores()-1),
     replications = 5,
     order = "relative"
 )
-dat_timer_results
+dat_timer_results[, -1]
 ```
 
 
-Preprocess data without parallel computing
+# Preprocess all the files
+
+**Caveat**  
+This section requires much more time than other section. Choose one code chunck to preprocess all the fcs files with or without parallel computing. Note that when I executed the code, errors may sometimes occurs randomly.
+
+**Preprocess data without parallel computing**
 ```{r}
-fs_trans <- lapply(X = fclist, FUN = read_preprocess_flowdata)
+func <- function(file_name){read_preprocess_flowdata(file_name, colnames(fs_sub)[4:16])}
+
+fs_trans <- lapply(X = fclist, FUN = func)
 fs_trans <- flowSet(fs_trans)
 ```
 
-Preprocess data with parallel computing
+**Preprocess data with parallel computing**
 ```{r}
-fs_trans <- mclapply(X = fclist, FUN = read_preprocess_flowdata, mc.cores=detectCores()-1)
+func <- function(file_name){read_preprocess_flowdata(file_name, colnames(fs_sub)[4:16])}
+
+fs_trans <- mclapply(X = fclist, FUN = func, mc.cores=detectCores()-1)
 fs_trans <- flowSet(fs_trans)
 ```
 
@@ -105,21 +152,12 @@ print out the results
 fs_trans
 ```
 
-
 store the results
 ```{r}
 save(fs_trans, file=file.path(datadir, "FlowHIV_Preprocessed.RData"))
 ```
 
 # Subset for example
-
-```{r}
-tmp <- read.flowSet(file.path(datadir, fclist[1:2]))
-                    #X = fclist[1:10], FUN = read_preprocess_flowdata)
-names(fs_trans_subset10) <- fclist[1:10]
-fs_trans_subset10 <- flowSet(fs_trans_subset10)
-fs_trans_subset10
-```
 
 preprocess 10 samples for further exploratory data analysis
 ```{r}
@@ -147,6 +185,35 @@ store the results
 save(fs_trans_subset100, file=file.path(datadir, "FlowHIV_Preprocessed_subset100.RData"))
 ```
 
+# Appendix: the markers and their description
 
++--------+---------+--------------+--------+
+| NA     | NA      | NA           | KI67   |
++--------+---------+--------------+--------+
+| FSC-A  | FSC-H   | SSC-A        | B515-A |
++--------+---------+--------------+--------+
+| CD3    | CD28    | CD45RO       | CD8    |
++--------+---------+--------------+--------+
+| R780-A | R710-A  | R660-A       | V800-A |
++--------+---------+--------------+--------+
+| CD4    | CD57    | VIVID / CD14 |  CCR5  |
++--------+---------+--------------+--------+
+| V655-A | V585-A  | V450-A       | G780-A |
++--------+---------+--------------+--------+
+| CD19   | CD27    | CCR7         | CD127  |
++--------+---------+--------------+--------+
+| G710-A | G660-A  | G610-A       | G560-A |
++--------+---------+--------------+--------+
 
+```{r}
+fdat <- fs_sub[[1]]
+tmp1 <- fdat@parameters@data$name
+tmp2 <- fdat@parameters@data$desc
+len  <- length(tmp1)
+col_name = c(
+    tmp1[1:3], 
+    paste(tmp1[4:len], tmp2[4:len]))
+names(col_name) <- NULL
+print(col_name)
+```
 

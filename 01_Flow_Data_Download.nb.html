@@ -173,33 +173,67 @@ $(document).ready(function () {
 
 
 <!-- rnb-text-begin -->
+<div id="goal" class="section level1">
+<h1>Goal</h1>
+<p>In this Project, I am going to performed exploratory data analysis on HIV flow cytometry dataset. In this notebook, I used the code to get the information of dataset (ID: FR-FCM-ZZZK) from flow repository. In addition, the code will download the package I wrote, which includes important functions that would be used in the project.</p>
+</div>
 <div id="setup-environment" class="section level1">
 <h1>Setup environment</h1>
 <p>import needed library</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShGbG93UmVwb3NpdG9yeVIpXG5gYGAifQ== -->
-<pre class="r"><code>library(FlowRepositoryR)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBGbG93UmVwb3NpdG9yeVIgbGlicmFyeSBpcyBuZWVkZWQgdG8gZG93bmxvYWQgZGF0YSBmcm9tIGZsb3cgcmVwb3NpdG9yeVxubGlicmFyeShGbG93UmVwb3NpdG9yeVIpXG5gYGAifQ== -->
+<pre class="r"><code># FlowRepositoryR library is needed to download data from flow repository
+library(FlowRepositoryR)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>setup directory</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBUaGUgZGlyZWN0b3J5IHRvIHN0b3JlIHRoZSBkYXRhc2V0XG5kYXRhZGlyIDwtIFwiL2RhdGEvRmxvd19ISVZcIlxuYGBgIn0= -->
-<pre class="r"><code># The directory to store the dataset
-datadir &lt;- &quot;/data/Flow_HIV&quot;</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>install packages</p>
+<p>In this project I have created additional helper functions and organized them into a package</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBpbnN0YWxsIHRoZSBoZWxwZXIgcGFja2FnZVxubGlicmFyeShkZXZ0b29scylcbmluc3RhbGxfZ2l0aHViKFwiY2xpbnRrby9iaW9zODIyRmluYWxQcm9qUGFja2FnZXNcIiwgZm9yY2UgPSBUUlVFKVxuYGBgIn0= -->
+<pre class="r"><code># install the helper package
+library(devtools)
+install_github(&quot;clintko/bios822FinalProjPackages&quot;, force = TRUE)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRG93bmxvYWRpbmcgR2l0SHViIHJlcG8gY2xpbnRrby9iaW9zODIyRmluYWxQcm9qUGFja2FnZXNAbWFzdGVyXG5mcm9tIFVSTCBodHRwczovL2FwaS5naXRodWIuY29tL3JlcG9zL2NsaW50a28vYmlvczgyMkZpbmFsUHJvalBhY2thZ2VzL3ppcGJhbGwvbWFzdGVyXG5JbnN0YWxsaW5nIGJpb3M4MjJGaW5hbFByb2pQYWNrYWdlc1xuJy91c3IvbGliL1IvYmluL1InIC0tbm8tc2l0ZS1maWxlIC0tbm8tZW52aXJvbiAtLW5vLXNhdmUgLS1uby1yZXN0b3JlIC0tcXVpZXQgQ01EIElOU1RBTEwgIFxcXG4gICcvdG1wL1J0bXB2dG4zVncvZGV2dG9vbHMzYWFjNjY5NTEzMWEvY2xpbnRrby1iaW9zODIyRmluYWxQcm9qUGFja2FnZXMtYmNlNDYyNycgIFxcXG4gIC0tbGlicmFyeT0nL2hvbWUvY2xpbnQvUi94ODZfNjQtcGMtbGludXgtZ251LWxpYnJhcnkvMy40JyAtLWluc3RhbGwtdGVzdHMgXG5cbiogaW5zdGFsbGluZyAqc291cmNlKiBwYWNrYWdlIOKAmGJpb3M4MjJGaW5hbFByb2pQYWNrYWdlc+KAmSAuLi5cbioqIFJcbioqIHByZXBhcmluZyBwYWNrYWdlIGZvciBsYXp5IGxvYWRpbmdcbioqIGhlbHBcbioqKiBpbnN0YWxsaW5nIGhlbHAgaW5kaWNlc1xuKiogYnVpbGRpbmcgcGFja2FnZSBpbmRpY2VzXG4qKiB0ZXN0aW5nIGlmIGluc3RhbGxlZCBwYWNrYWdlIGNhbiBiZSBsb2FkZWRcbiogRE9ORSAoYmlvczgyMkZpbmFsUHJvalBhY2thZ2VzKVxuUmVsb2FkaW5nIGluc3RhbGxlZCBiaW9zODIyRmluYWxQcm9qUGFja2FnZXNcbiJ9 -->
+<pre><code>Downloading GitHub repo clintko/bios822FinalProjPackages@master
+from URL https://api.github.com/repos/clintko/bios822FinalProjPackages/zipball/master
+Installing bios822FinalProjPackages
+'/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet CMD INSTALL  \
+  '/tmp/Rtmpvtn3Vw/devtools3aac6695131a/clintko-bios822FinalProjPackages-bce4627'  \
+  --library='/home/clint/R/x86_64-pc-linux-gnu-library/3.4' --install-tests 
+
+* installing *source* package ‘bios822FinalProjPackages’ ...
+** R
+** preparing package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+* DONE (bios822FinalProjPackages)
+Reloading installed bios822FinalProjPackages</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBpbXBvcnQgdGhlIGxpYnJhcnlcbmxpYnJhcnkoYmlvczgyMkZpbmFsUHJvalBhY2thZ2VzKVxuIyBDaGVjayBpZiB0aGUgcGFja2FnZSBpcyBpbnN0YWxsZWQuXG5oZWxsbygpXG5gYGAifQ== -->
+<pre class="r"><code># import the library
+library(bios822FinalProjPackages)
+# Check if the package is installed.
+hello()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiSGVsbG8gdG8gQ2xpbnQncyBiaW9zODIyRmluYWxQcm9qUGFja2FnZXMhXCJcbiJ9 -->
+<pre><code>[1] &quot;Hello to Clint's bios822FinalProjPackages!&quot;</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
 <div id="summary-information-of-flow-repository" class="section level1">
 <h1>Summary information of Flow Repository</h1>
+<p>Below is the summary of the dataset:</p>
 <ul>
 <li>Repository:
 <ul>
@@ -212,19 +246,24 @@ datadir &lt;- &quot;/data/Flow_HIV&quot;</code></pre>
 <li>PFC analysis of 466 subjects enrolled in Infectious Disease Clinical Research Program’s Natural History Study</li>
 </ul></li>
 <li>Link: <a href="http://flowrepository.org/id/FR-FCM-ZZZK" class="uri">http://flowrepository.org/id/FR-FCM-ZZZK</a></li>
+<li>Citation:
+<ul>
+<li>Aghaeepour N (2012) IDCRP’s HIV Natural History Study data set.</li>
+<li>Aghaeepour N (2012) Early immunologic correlates of HIV protection can be identified from computational analysis of complex multivariate T-cell flow cytometry assays</li>
+</ul></li>
 </ul>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZmxvd1JlcC5zZWFyY2goXCJGUi1GQ00tWlpaS1wiKVxuXG5gYGAifQ== -->
-<pre class="r"><code>flowRep.search(&quot;FR-FCM-ZZZK&quot;)
-</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBTZWFyY2ggaWYgdGhlIGZsb3cgcmVwb3NpdG9yeSBJRCBcIkZSLUZDTS1aWlpLXCIgZXhpc3RcbmZsb3dSZXAuc2VhcmNoKFwiRlItRkNNLVpaWktcIilcbmBgYCJ9 -->
+<pre class="r"><code># Search if the flow repository ID &quot;FR-FCM-ZZZK&quot; exist
+flowRep.search(&quot;FR-FCM-ZZZK&quot;)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiRlItRkNNLVpaWktcIlxuIn0= -->
 <pre><code>[1] &quot;FR-FCM-ZZZK&quot;</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>information of FR-FCM-ZZZK</p>
+<p>information of flow repository dataset FR-FCM-ZZZK</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBkYXRhIHN1bW1hcnkgb2YgZmxvdyByZXBvc2l0b3J5IEZSLUZDTS1aWlpLXG5kYXRfc3VtIDwtIGZsb3dSZXAuZ2V0KFwiRlItRkNNLVpaWktcIik7IGNhdChcIlxcblwiKVxuYGBgIn0= -->
@@ -250,7 +289,7 @@ dat_sum &lt;- flowRep.get(&quot;FR-FCM-ZZZK&quot;); cat(&quot;\n&quot;)</code></
 </div>
 <div id="download-the-files" class="section level1">
 <h1>Download the files</h1>
-<p>for more information, the files can be downloaded from the website:<br />
+<p>The command below downloads the dataset from flow repository. The size of files is around 60 Gb in total. For more information, the files can be downloaded from the website:<br />
 <a href="http://flowrepository.org/experiments/20/download_ziped_files" class="uri">http://flowrepository.org/experiments/20/download_ziped_files</a></p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
@@ -282,11 +321,13 @@ File 113548.fcs downloaded.</code></pre>
 </div>
 <div id="read-in-the-fcs-files" class="section level1">
 <h1>Read in the fcs files</h1>
+<p>Here I check the if the files are downloaded correctly from the flow repository. I have also stored the total dataset into a workspace.</p>
 <p>Number of fcs files; check if there are 466 fcs files</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3lzdGVtKFwibHMgL2RhdGEvRmxvd19ISVYvKi5mY3MgfCB3YyAtbFwiKVxuXG5gYGAifQ== -->
-<pre class="r"><code>system(&quot;ls /data/Flow_HIV/*.fcs | wc -l&quot;)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBiYXNoIGNvbW1hbmQgdG8gc2VlIGhvdyBtYW55IGZjcyBmaWxlcyBpbiB0aGUgZm9sZGVyXG5zeXN0ZW0oXCJscyAvZGF0YS9GbG93X0hJVi8qLmZjcyB8IHdjIC1sXCIpXG5cbmBgYCJ9 -->
+<pre class="r"><code># bash command to see how many fcs files in the folder
+system(&quot;ls /data/Flow_HIV/*.fcs | wc -l&quot;)
 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiNDY2XG4ifQ== -->
@@ -294,7 +335,7 @@ File 113548.fcs downloaded.</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>print out the files in directory</p>
+<p>print out the files in directory to double check if the files are downloaded currectly</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZmNsaXN0IDwtIGRpcihkYXRhZGlyKVxuZmNsaXN0IDwtIGZjbGlzdFtncmVwbChcImZjc1wiLCBmY2xpc3QpXVxuZmNsaXN0XG5gYGAifQ== -->
@@ -384,15 +425,24 @@ fclist</code></pre>
 <p>Store the result</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2F2ZShmcywgZmlsZT1maWxlLnBhdGgoZGF0YWRpciwgXCJGbG93SElWX1Jhdy5SRGF0YVwiKSlcbmBgYCJ9 -->
-<pre class="r"><code>save(fs, file=file.path(datadir, &quot;FlowHIV_Raw.RData&quot;))</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBzYXZlIHRoZSB3aG9sZSBkYXRhc2V0IGludG8gYSB3b3Jrc3BhY2VcbnNhdmUoZnMsIGZpbGU9ZmlsZS5wYXRoKGRhdGFkaXIsIFwiRmxvd0hJVl9SYXcuUkRhdGFcIikpXG5gYGAifQ== -->
+<pre class="r"><code># save the whole dataset into a workspace
+save(fs, file=file.path(datadir, &quot;FlowHIV_Raw.RData&quot;))</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>In addition, I have read a subset of fcs files for demontration.</p>
 <!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Store the result</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiTm90ZWJvb2sgMDE6IERvd25sb2FkIEZsb3cgRGF0YSIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKIyBTZXR1cCBlbnZpcm9ubWVudAoKaW1wb3J0IG5lZWRlZCBsaWJyYXJ5CmBgYHtyfQpsaWJyYXJ5KEZsb3dSZXBvc2l0b3J5UikKYGBgCgpzZXR1cCBkaXJlY3RvcnkKYGBge3J9CiMgVGhlIGRpcmVjdG9yeSB0byBzdG9yZSB0aGUgZGF0YXNldApkYXRhZGlyIDwtICIvZGF0YS9GbG93X0hJViIKYGBgCgppbnN0YWxsIHBhY2thZ2VzCmBgYHtyfQoKYGBgCgoKCgojIFN1bW1hcnkgaW5mb3JtYXRpb24gb2YgRmxvdyBSZXBvc2l0b3J5CgotIFJlcG9zaXRvcnk6CiAgICAtIEV4cGVyaW1lbnQ6IElEQ1JQJ3MgSElWIE5hdHVyYWwgSGlzdG9yeSBTdHVkeSAKICAgIC0gSUQ6IEZSLUZDTS1aWlpLIAogICAgLSBQcmltYXJ5IFJlc2VhcmNoZXI6IE5pbWEgQWdoYWVlcG91cgotIFB1cnBvc2U6CiAgICAtIFBGQyBhbmFseXNpcyBvZiA0NjYgc3ViamVjdHMgZW5yb2xsZWQgaW4gSW5mZWN0aW91cyBEaXNlYXNlIENsaW5pY2FsIFJlc2VhcmNoIFByb2dyYW0ncyBOYXR1cmFsIEhpc3RvcnkgU3R1ZHkKLSBMaW5rOiBodHRwOi8vZmxvd3JlcG9zaXRvcnkub3JnL2lkL0ZSLUZDTS1aWlpLCmBgYHtyfQpmbG93UmVwLnNlYXJjaCgiRlItRkNNLVpaWksiKQpgYGAKCmluZm9ybWF0aW9uIG9mIEZSLUZDTS1aWlpLCmBgYHtyfQojIGRhdGEgc3VtbWFyeSBvZiBmbG93IHJlcG9zaXRvcnkgRlItRkNNLVpaWksKZGF0X3N1bSA8LSBmbG93UmVwLmdldCgiRlItRkNNLVpaWksiKTsgY2F0KCJcbiIpCnN1bW1hcnkoZGF0X3N1bSkKYGBgCgojIERvd25sb2FkIHRoZSBmaWxlcwoKZm9yIG1vcmUgaW5mb3JtYXRpb24sIHRoZSBmaWxlcyBjYW4gYmUgZG93bmxvYWRlZCBmcm9tIHRoZSB3ZWJzaXRlOiAgIApodHRwOi8vZmxvd3JlcG9zaXRvcnkub3JnL2V4cGVyaW1lbnRzLzIwL2Rvd25sb2FkX3ppcGVkX2ZpbGVzCgpgYGB7cn0KZGF0X3N1bSAgPC0gZmxvd1JlcC5nZXQoIkZSLUZDTS1aWlpLIikKZGF0X2ZpbGUgPC0gZG93bmxvYWQoZGF0X3N1bSwgZGlycGF0aCA9IGRhdGFkaXIpCmBgYAoKIyBSZWFkIGluIHRoZSBmY3MgZmlsZXMKCk51bWJlciBvZiBmY3MgZmlsZXM7IGNoZWNrIGlmIHRoZXJlIGFyZSA0NjYgZmNzIGZpbGVzCmBgYHtyfQpzeXN0ZW0oImxzIC9kYXRhL0Zsb3dfSElWLyouZmNzIHwgd2MgLWwiKQpgYGAKCnByaW50IG91dCB0aGUgZmlsZXMgaW4gZGlyZWN0b3J5CmBgYHtyfQpmY2xpc3QgPC0gZGlyKGRhdGFkaXIpCmZjbGlzdCA8LSBmY2xpc3RbZ3JlcGwoImZjcyIsIGZjbGlzdCldCmZjbGlzdApgYGAKCnJlYWQgaW4gYSB3aG9sZSBzZXQgb2YgZmNzIGZpbGVzIApgYGB7cn0KZnMgPC0gcmVhZC5mbG93U2V0KGZpbGUucGF0aChkYXRhZGlyLCBmY2xpc3QpLCB0cmFuc2Zvcm1hdGlvbiA9IEZBTFNFKQpgYGAKClN0b3JlIHRoZSByZXN1bHQKYGBge3J9CnNhdmUoZnMsIGZpbGU9ZmlsZS5wYXRoKGRhdGFkaXIsICJGbG93SElWX1Jhdy5SRGF0YSIpKQpgYGAKCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiTm90ZWJvb2sgMDE6IERvd25sb2FkIEZsb3cgRGF0YSIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKIyBHb2FsCkluIHRoaXMgUHJvamVjdCwgSSBhbSBnb2luZyB0byBwZXJmb3JtZWQgZXhwbG9yYXRvcnkgZGF0YSBhbmFseXNpcyBvbiBISVYgZmxvdyBjeXRvbWV0cnkgZGF0YXNldC4gSW4gdGhpcyBub3RlYm9vaywgSSB1c2VkIHRoZSBjb2RlIHRvIGdldCB0aGUgaW5mb3JtYXRpb24gb2YgZGF0YXNldCAoSUQ6IEZSLUZDTS1aWlpLKSBmcm9tIGZsb3cgcmVwb3NpdG9yeS4gSW4gYWRkaXRpb24sIHRoZSBjb2RlIHdpbGwgZG93bmxvYWQgdGhlIHBhY2thZ2UgSSB3cm90ZSwgd2hpY2ggaW5jbHVkZXMgaW1wb3J0YW50IGZ1bmN0aW9ucyB0aGF0IHdvdWxkIGJlIHVzZWQgaW4gdGhlIHByb2plY3QuCgojIFNldHVwIGVudmlyb25tZW50CgppbXBvcnQgbmVlZGVkIGxpYnJhcnkKYGBge3J9CiMgRmxvd1JlcG9zaXRvcnlSIGxpYnJhcnkgaXMgbmVlZGVkIHRvIGRvd25sb2FkIGRhdGEgZnJvbSBmbG93IHJlcG9zaXRvcnkKbGlicmFyeShGbG93UmVwb3NpdG9yeVIpCmBgYAoKc2V0dXAgZGlyZWN0b3J5CmBgYHtyfQojIFRoZSBkaXJlY3RvcnkgdG8gc3RvcmUgdGhlIGRhdGFzZXQKZGF0YWRpciA8LSAiL2RhdGEvRmxvd19ISVYiCmBgYAoKSW4gdGhpcyBwcm9qZWN0IEkgaGF2ZSBjcmVhdGVkIGFkZGl0aW9uYWwgaGVscGVyIGZ1bmN0aW9ucyBhbmQgb3JnYW5pemVkIHRoZW0gaW50byBhIHBhY2thZ2UKYGBge3J9CiMgaW5zdGFsbCB0aGUgaGVscGVyIHBhY2thZ2UKbGlicmFyeShkZXZ0b29scykKaW5zdGFsbF9naXRodWIoImNsaW50a28vYmlvczgyMkZpbmFsUHJvalBhY2thZ2VzIiwgZm9yY2UgPSBUUlVFKQoKIyBpbXBvcnQgdGhlIGxpYnJhcnkKbGlicmFyeShiaW9zODIyRmluYWxQcm9qUGFja2FnZXMpCgojIENoZWNrIGlmIHRoZSBwYWNrYWdlIGlzIGluc3RhbGxlZC4KaGVsbG8oKQpgYGAKCiMgU3VtbWFyeSBpbmZvcm1hdGlvbiBvZiBGbG93IFJlcG9zaXRvcnkKCkJlbG93IGlzIHRoZSBzdW1tYXJ5IG9mIHRoZSBkYXRhc2V0OgoKLSBSZXBvc2l0b3J5OgogICAgLSBFeHBlcmltZW50OiBJRENSUCdzIEhJViBOYXR1cmFsIEhpc3RvcnkgU3R1ZHkgCiAgICAtIElEOiBGUi1GQ00tWlpaSyAKICAgIC0gUHJpbWFyeSBSZXNlYXJjaGVyOiBOaW1hIEFnaGFlZXBvdXIKLSBQdXJwb3NlOgogICAgLSBQRkMgYW5hbHlzaXMgb2YgNDY2IHN1YmplY3RzIGVucm9sbGVkIGluIEluZmVjdGlvdXMgRGlzZWFzZSBDbGluaWNhbCBSZXNlYXJjaCBQcm9ncmFtJ3MgTmF0dXJhbCBIaXN0b3J5IFN0dWR5Ci0gTGluazogaHR0cDovL2Zsb3dyZXBvc2l0b3J5Lm9yZy9pZC9GUi1GQ00tWlpaSwotIENpdGF0aW9uOgogICAgLSBBZ2hhZWVwb3VyIE4gKDIwMTIpIElEQ1JQJ3MgSElWIE5hdHVyYWwgSGlzdG9yeSBTdHVkeSBkYXRhIHNldC4KICAgIC0gQWdoYWVlcG91ciBOICgyMDEyKSBFYXJseSBpbW11bm9sb2dpYyBjb3JyZWxhdGVzIG9mIEhJViBwcm90ZWN0aW9uIGNhbiBiZSBpZGVudGlmaWVkIGZyb20gY29tcHV0YXRpb25hbCBhbmFseXNpcyBvZiBjb21wbGV4IG11bHRpdmFyaWF0ZSBULWNlbGwgZmxvdyBjeXRvbWV0cnkgYXNzYXlzCgpgYGB7cn0KIyBTZWFyY2ggaWYgdGhlIGZsb3cgcmVwb3NpdG9yeSBJRCAiRlItRkNNLVpaWksiIGV4aXN0CmZsb3dSZXAuc2VhcmNoKCJGUi1GQ00tWlpaSyIpCmBgYAoKaW5mb3JtYXRpb24gb2YgZmxvdyByZXBvc2l0b3J5IGRhdGFzZXQgRlItRkNNLVpaWksKYGBge3J9CiMgZGF0YSBzdW1tYXJ5IG9mIGZsb3cgcmVwb3NpdG9yeSBGUi1GQ00tWlpaSwpkYXRfc3VtIDwtIGZsb3dSZXAuZ2V0KCJGUi1GQ00tWlpaSyIpOyBjYXQoIlxuIikKc3VtbWFyeShkYXRfc3VtKQpgYGAKCiMgRG93bmxvYWQgdGhlIGZpbGVzCgpUaGUgY29tbWFuZCBiZWxvdyBkb3dubG9hZHMgdGhlIGRhdGFzZXQgZnJvbSBmbG93IHJlcG9zaXRvcnkuIFRoZSBzaXplIG9mIGZpbGVzIGlzIGFyb3VuZCA2MCBHYiBpbiB0b3RhbC4gRm9yIG1vcmUgaW5mb3JtYXRpb24sIHRoZSBmaWxlcyBjYW4gYmUgZG93bmxvYWRlZCBmcm9tIHRoZSB3ZWJzaXRlOiAgIApodHRwOi8vZmxvd3JlcG9zaXRvcnkub3JnL2V4cGVyaW1lbnRzLzIwL2Rvd25sb2FkX3ppcGVkX2ZpbGVzCgpgYGB7cn0KZGF0X3N1bSAgPC0gZmxvd1JlcC5nZXQoIkZSLUZDTS1aWlpLIikKZGF0X2ZpbGUgPC0gZG93bmxvYWQoZGF0X3N1bSwgZGlycGF0aCA9IGRhdGFkaXIpCmBgYAoKIyBSZWFkIGluIHRoZSBmY3MgZmlsZXMKSGVyZSBJIGNoZWNrIHRoZSBpZiB0aGUgZmlsZXMgYXJlIGRvd25sb2FkZWQgY29ycmVjdGx5IGZyb20gdGhlIGZsb3cgcmVwb3NpdG9yeS4gSSBoYXZlIGFsc28gc3RvcmVkIHRoZSB0b3RhbCBkYXRhc2V0IGludG8gYSB3b3Jrc3BhY2UuIAoKTnVtYmVyIG9mIGZjcyBmaWxlczsgY2hlY2sgaWYgdGhlcmUgYXJlIDQ2NiBmY3MgZmlsZXMKYGBge3J9CiMgYmFzaCBjb21tYW5kIHRvIHNlZSBob3cgbWFueSBmY3MgZmlsZXMgaW4gdGhlIGZvbGRlcgpzeXN0ZW0oImxzIC9kYXRhL0Zsb3dfSElWLyouZmNzIHwgd2MgLWwiKQpgYGAKCnByaW50IG91dCB0aGUgZmlsZXMgaW4gZGlyZWN0b3J5IHRvIGRvdWJsZSBjaGVjayBpZiB0aGUgZmlsZXMgYXJlIGRvd25sb2FkZWQgY3VycmVjdGx5CmBgYHtyfQpmY2xpc3QgPC0gZGlyKGRhdGFkaXIpCmZjbGlzdCA8LSBmY2xpc3RbZ3JlcGwoImZjcyIsIGZjbGlzdCldCmZjbGlzdApgYGAKCnJlYWQgaW4gYSB3aG9sZSBzZXQgb2YgZmNzIGZpbGVzIApgYGB7cn0KZnMgPC0gcmVhZC5mbG93U2V0KGZpbGUucGF0aChkYXRhZGlyLCBmY2xpc3QpLCB0cmFuc2Zvcm1hdGlvbiA9IEZBTFNFKQpgYGAKClN0b3JlIHRoZSByZXN1bHQKYGBge3J9CiMgc2F2ZSB0aGUgd2hvbGUgZGF0YXNldCBpbnRvIGEgd29ya3NwYWNlCnNhdmUoZnMsIGZpbGU9ZmlsZS5wYXRoKGRhdGFkaXIsICJGbG93SElWX1Jhdy5SRGF0YSIpKQpgYGAKCkluIGFkZGl0aW9uLCBJIGhhdmUgcmVhZCBhIHN1YnNldCBvZiBmY3MgZmlsZXMgZm9yIGRlbW9udHJhdGlvbi4KYGBge3J9CiMgcmVhZCBpbiB0aGUgZmlyc3QgMTAgZmlsZXMKZnNfc3ViIDwtIHJlYWQuZmxvd1NldChmaWxlLnBhdGgoZGF0YWRpciwgZmNsaXN0WzE6MTBdKSwgdHJhbnNmb3JtYXRpb24gPSBGQUxTRSkKYGBgCgpTdG9yZSB0aGUgcmVzdWx0CmBgYHtyfQojIHNhdmUgdGhlIHN1Yi1kYXRhc2V0IGludG8gYSB3b3Jrc3BhY2UKc2F2ZShmc19zdWIsIGZpbGU9ZmlsZS5wYXRoKGRhdGFkaXIsICJGbG93SElWX1Jhd19zdWJzZXQxMC5SRGF0YSIpKQpgYGAK</div>
 
 
 
