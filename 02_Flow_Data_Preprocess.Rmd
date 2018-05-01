@@ -63,7 +63,7 @@ Here I will use the subset of HIV flow cytometry data to demonstrate how compens
 load(file.path(datadir, "FlowHIV_Raw_subset10.RData"))
 ```
 
-print out the markers
+print out the markers (Note: 'A' represents the area under curve and H is the maximum height)
 ```{r}
 colnames(fs_sub)
 ```

@@ -4,33 +4,44 @@ output: html_notebook
 ---
 
 # Goal:
-In this notebook, 
+In this notebook, I performed exploratory data analysis on the preprocess flow cytometry data and clinical data, which was imported using the readr package. First, I performed survival analysis and visualized the results by ploting Kaplan-Meier curve. Then, the global pattern of flow cytometry measurements in a sample was visualized using dimensional reduction and heatmap. Then, the markers was compared in fcs sample. The comparison of markers can also be plotted by pairwise scatter plots. Furthermore, the selected markers could visualized in one figure by merging multiple fcs data. The merged dataset can be further joined with the clinical data for more detailed exploration. Next, the distribution of markers measurements is compared using density plot. Finally, each cell was compared with each other and visualized via network plot. Most of the visualization are included to Shiny app in the forth notebook.
 
 # Setup environment
 
 import needed library
 ```{r, message = FALSE}
 library(tidyverse)
-library(survival)  # library for survival analysis
-library(rms)       # library for survival analysis
-library(flowCore)  # library for processing  flow dataset
-library(flowViz)   # library for visualizing flow dataset
-library(ggcyto)    # library for visualizing flow dataset
-library(pheatmap)  # library for plotting heatmap
-library(networkD3) # library for plotting network
+library(reshape2)
+library(RColorBrewer) # library for general plotting
+library(gridExtra)    # library for general plotting
+library(survival)     # library for survival analysis
+library(rms)          # library for survival analysis
+library(flowCore)     # library for analyzing   flow dataset
+library(flowStats)    # library for analyzing   flow dataset
+library(flowViz)      # library for visualizing flow dataset
+library(ggcyto)       # library for visualizing flow dataset
+library(Rtsne)        # library for dimensional reduction (t-SNE)
+library(pheatmap)     # library for plotting heatmap
+library(networkD3)    # library for plotting network
 ```
 
 setup required directory
 ```{r}
 datadir <- "/data/Flow_HIV"
+#####################################
 load(file.path(datadir, "FlowHIV_Preprocessed_subset10.RData"))
+fdats <- fs_trans_subset10
+
 #load(file.path(datadir, "FlowHIV_Preprocessed_subset100.RData"))
+#fdats <- fs_trans_subset100
+
 #load(file.path(datadir, "FlowHIV_Preprocessed.RData"))
+#fdats <- fs_trans
 ```
 
 # Read in the clinical data of each patient
 
-The clinical data contains the survival time and death of each patient.
+The clinical data contains the survival time and death of each patient. 
 ```{r}
 dat_clinic <- read_delim(
     file.path(datadir, "attachments", "clinical_data_flow_repository.csv"),
@@ -41,6 +52,7 @@ colnames(dat_clinic)[2] <- "Surv_Time"
 dat_clinic$Surv_Obj <- with(dat_clinic, Surv(Surv_Time))
 ```
 
+The data contains survival time and the patient IDs, which correspond to the file name of fcs files.
 ```{r}
 head(dat_clinic)
 ```
@@ -53,17 +65,16 @@ dat <- dat_clinic
 dat <- dat %>% arrange(Surv_Time)
 dat$ID <- as.character(dat$ID)
 dat$ID <- factor(dat$ID, levels = dat$ID)
-#id <- "548988"
-
-#dat$choose <- ifelse(dat$ID %in% id, "Chosen", "Not_Chosen")
-#idx <- which(dat$choose == "Chosen")
 
 ggplot(dat, aes(x = ID, y = Surv_Time)) + 
     geom_histogram(stat = "identity") +
-    theme(axis.text.x = element_blank())#element_text(angle = 90, hjust = 1))
+    xlab("Sample") + 
+    ylab("Survival Time") +
+    theme(axis.text.x = element_blank())
+    #element_text(angle = 90, hjust = 1))
 ```
 
-Fit the survival model
+Fit the clinical data with survival model
 ```{r}
 fit = npsurv(formula = Surv(Surv_Time) ~ 1, data = dat_clinic)
 # The code below no longer work
@@ -75,7 +86,7 @@ fit = npsurv(formula = Surv(Surv_Time) ~ 1, data = dat_clinic)
 #survplot(fit)
 ```
 
-Kaplan-meier curve
+plot the Kaplan-meier curve
 ```{r}
 survplot(
     fit, 
@@ -86,162 +97,310 @@ survplot(
     time.inc = 1000)
 ```
 
+# Dimension Reduction Visualization
 
+Dimensional reduction plot allows researcher to visualize the distribution of high dimensional data at lower dimensional space. Here I used t-distributed stochastic neighbor embedding (t-SNE) to reduce the dimension of data. The advantage of t-SNE plot does not use linear transformation to preserved the distance of observation in high dimensional space. Therefore, it is better to visualize the complex pattern compared to other methods that applied linear transformation such as PCA, which applied eigendecomposition to decompose the covariance matris. Unlike PCA, the axes of t-SNE plot does not have obvious meaning, while in PCA, each axes represents a linear combination of variables.
+
+```{r}
+# set parameters
+idx  <- 1
+set_seed <- 0
+num_events <- 1000
+
+# select the target fcs sample
+fdat <- fdats[[idx]]
+expr <- exprs(fdat)
+
+# randomly select rows
+set.seed(set_seed)
+idx_events <- sample(1:nrow(expr), num_events)
+
+#
+mat <- expr[idx_events, ] %>% 
+    as.tibble %>% 
+    dplyr::filter(`R780-A` > 0)
+```
+
+Perform t-SNE for dimensional reduction
+```{r}
+tsne_out = Rtsne(
+    mat, 
+    dims = 2,
+    perplexity = 30, 
+    theta = 0.5, 
+    max_iter = 1000)
+```
+
+Visualize the result. The color was specified by the intensity of CD3 marker (High: red; Low: blue)
+```{r}
+# set color based on marker R780-A
+rbPal      <- colorRampPalette(c(
+    'red',      # red
+    '#fb8072',  # rose
+    '#8da0cb')) # blue
+tmp_val    <- mat$`R780-A`
+tmp_colors <- rbPal(20)[as.numeric(cut(tmp_val, breaks = 20))]
+
+# plot the scatter plot
+plot(
+    tsne_out$Y, pch = 20,
+    col  = tmp_colors,
+    xlab = "t-sne axis x",
+    ylab = "t-sne axis y",
+    main = "t-SNE Plot Colored by Intensities of CD3 Marker (R780)")
+```
+
+
+# Using Heatmap to visualize the pattern of a preprocessed fcs data
+
+Each intensity matrix belongs to [tidy data defined in R for data science](http://r4ds.had.co.nz/tidy-data.html), where each row represents a observation (cell) and each column is a variable (marker). For a sample, a certain fraction of cells were randomly selected for plotting. Here I plotted the first fcs file. In the shiny app, users can choose which file to plot. 
+```{r}
+# set parameters for plotting
+set_seed <- 0
+fraction <- 0.05
+idx      <- 1
+
+# choose the targeted fcs file and get measurement values
+fdat <- fdats[[idx]]
+expr <- exprs(fdat)
+
+# randomly select rows
+set.seed(set_seed)
+idx_events <- sample(
+    1:nrow(expr), 
+    floor(fraction * nrow(expr)))
+
+# set up column names
+tmp1 <- fdat@parameters@data$name
+tmp2 <- fdat@parameters@data$desc
+len  <- length(tmp1)
+col_name = c(
+    tmp1[1:3], 
+    paste(tmp1[4:len], tmp2[4:len]))
+colnames(expr) <- col_name
+```
+
+Set colors to better visualize the results.
+```{r}
+# set up colors
+tmp_colors <- rev(brewer.pal(9, "RdYlBu"))
+tmp_colors <- c(
+    rep(tmp_colors[1], each = 10),
+    tmp_colors[2:7],
+    rep(tmp_colors[8:9], each = 2))
+color_pal <- colorRampPalette(tmp_colors)
+
+# plot heatmap
+pheatmap(
+  mat               = expr[idx_events, 4:16],
+  color             = color_pal(100),
+  border_color      = NA,
+  show_colnames     = TRUE,
+  show_rownames     = FALSE,
+  #annotation_col    = mat_col,
+  #annotation_colors = mat_colors,
+  clustering_distance_rows = "correlation",
+  clustering_distance_cols = "correlation",
+  drop_levels       = TRUE,
+  fontsize          = 10,
+  main              = sampleNames(fdats))
+```
+
+# Summary markers' measurement values of one file
+
+Here I plotted the first fcs file. In the shiny app, users can choose which file to plot.
+```{r}
+idx  <- 1
+fdat <- fdats[[idx]]
+```
+
+plot pairwise scatter plot
 ```{r, warning = FALSE}
-fdat <- fs_trans_subset10[[1]]
 print(splom(fdat))
 ```
 
+summarise the distribution of each marker 
 ```{r}
 autoplot(fdat)
 ```
 
+# Comparing markers of different fcs files
 
+R780-A values represents CD3 markers. Here I visualized the intensities of CD3 markers in multiple fcs files. 
+```{r, warning = FALSE}
+#plt <- xyplot(`FSC-A` ~ `R780-A`, fdats)
+#print(plt)
+densityplot(~ `V655-A`, fdats, main="Density plot of V655-A CD3")
+```
+
+The [CD3 marker](https://en.wikipedia.org/wiki/CD3_(immunology)) is a co-receptor specific to T-cells. CD3 is involved in T-cells activation, including cytotoxic T-cells (CD8+) and helper T-cells (CD4+). Therefore, the possible T-cells can be selected by selecting high intensity of the CD3 marker. 
+```{r, warning = FALSE}
+# Gating Process: 
+# Choosing high intensity of CD3 marker
+wf <- workFlow(fdats)
+
+lg <- lymphGate(
+    fdats, 
+    channels=c("FSC-A", "R780-A"),
+    filterId="TCells", eval=FALSE,
+    scale=2.5)
+
+add(wf, lg$n2gate)
+```
+
+Visualize the gating results. The candidate cells were selected by red circle
 ```{r}
+plt <- xyplot(
+    # specify data and markers
+    `FSC-A` ~ `R780-A`, wf[["TCells+"]], 
+    # plot transparent red circle
+    par.settings=list(gate=list(col="red", fill="red", alpha=0.3)))
+print(plt)
+```
+
+Markers can be visualized by scatter plot in multiple fcs files. In the shiny app, both markers can be selected by users. As discussed in notebook 02, it is normal to observe some data points where markers have measurements smaller than zero. Most of the cells (> 60%) are at the first quadrant.
+```{r}
+# show #cells with both markers larger than zero
+for (idx in 1:length(fdats)){
+    tmp1 <- fdats[[idx]] %>% exprs %>% as.tibble %>% 
+        dplyr::filter(`R780-A` > 0, `R660-A` > 0) %>% nrow
+    tmp2 <- fdats[[idx]] %>% exprs %>% as.tibble %>% nrow
+    cat(sampleNames(fdats)[idx], ": Proportion of cells in 1st quadrant", tmp1 / tmp2, "\n")
+}
+
+# plot scatter plots
+autoplot(fdats, "R780-A", "R660-A")
+```
+
+Merge the data to plot them in one figure. The clinical information is added into the plot to provide detailed exploration than the plot above. Note that to simplified the plot, only the 50% of the cell proportion in 1st quadrant was visualized in each sample.
+```{r}
+# initialization
+res <- list() # container to store the intensity matrix of each sample
+set_seed <- 0 # seed for randomization
+
+# get the marker intensities of each sample
+set.seed(set_seed)
+
+for (idx in 1:length(fdats)){
+    # expression matrix
+    tmp = exprs(fdats[[idx]]) %>% 
+        as.tibble %>%
+        dplyr::select(`R780-A`, `R660-A`) %>%
+        dplyr::filter(`R780-A` > 0, `R660-A` > 0) %>%
+        dplyr::rename(CD3 = `R780-A`, CD45RO = `R660-A`) %>%
+        dplyr::sample_frac(0.5)
+    
+    # specify ID (file name)
+    id <- str_split(
+        sampleNames(fdats)[idx], 
+        "\\.", 
+        simplify = TRUE)[1, 1]
+    tmp$ID <- as.numeric(id)
+    
+    # store the result
+    res[[idx]] <- tmp
+} # end for loop
+
+# combine the results and joined with clinical data
+res <- do.call(rbind, res)
+res <- dplyr::left_join(res, dat_clinic, by = "ID")
+res$ID <- as.character(res$ID)
+```
+
+Below I would plot the data points with color by ID and Survival Time. Both color scale were sorted by Survival Time.
+```{r}
+tmp <- res %>% 
+    arrange(Surv_Time) %>% 
+    dplyr::select(ID, Surv_Time) %>% 
+    distinct()
+tmp
+```
+
+Set colors and plot scatter plot colored by survival time and ID. The marker CD45RO is expressed in T cells that have been exposed to antigen. That is, CD45RO can be used to distinguish the memory T cells from naive T cells.
+```{r, fig.height = 3, fig.width = 10}
+############################################
+##### setup color for Survival Time #####
+
+# color palatte
+tmp_colors <- rev(brewer.pal(5, "Reds"))
+color_pal  <- colorRampPalette(tmp_colors)
+
+############################################
+##### setup color for ID #####
+
+# color palatte
+tmp_colors <- rev(brewer.pal(10, "Blues"))
+fill_pal  <- colorRampPalette(tmp_colors)
+
+# manual mapping ID & color
+tmp <- res %>% arrange(Surv_Time) %>% dplyr::select(ID, Surv_Time) %>% distinct()
+tmp_colors <- fill_pal(10)
+names(tmp_colors) <- tmp$ID
+
+# set ID factor
+res$ID <- factor(res$ID, levels = tmp$ID)
+
+############################################
+##### Plot the scatter plots #####    
+# color by log10 survival time
+gp1 <- ggplot(res, aes(x = CD3, y = CD45RO, color = log10(Surv_Time))) +
+    geom_point(size = 0.1, alpha = 0.5) +
+    scale_color_gradientn(colours = color_pal(10))
+
+# color by ID
+gp2 <- ggplot(res, aes(x = CD3, y = CD45RO, color = ID)) +
+    geom_point(size = 0.1, alpha = 0.5) +
+    scale_color_manual(values = tmp_colors)
+
+# arrange two plots into one
+grid.arrange(gp1, gp2, nrow = 1)
+```
+
+
+
+# Construct sample network
+
+In the heatmap and scatter plot, it may not be easy to visualize the relationship among cells / observations. In this section, I used a different perspective to explore a cell population. For a sample, I first compared the cells (observations; rows) using correlation as distance function. The distance matrix was then converted to simiality matrix and further converted into adjacency matrix of a network by selecting an arbitrary cutoff value (which can be specify easily in the shiny app).
+
+Note that I plotted one fcs file in this section. In the shiny app, users are allowed to choose any fcs file / sample.
+```{r}
+# intialization
+idx  <- 1
+num_events <- 1000
+
+# plot the targeted fcs file
+fdat <- fdats[[idx]]
 expr <- exprs(fdat)
-print(sum(expr[, "FSC-A"] < 0))
-print(sum(expr[, "FSC-H"] < 0))
-print(sum(expr[, "SSC-A"] < 0))
-```
 
+# randomly select rows
+set.seed(set_seed)
+idx_events <- sample(1:nrow(expr), num_events)
+expr <- expr[idx_events, ]
 
+# calculate the correlation distance 
+# (euclidean distance after standardization)
+expr <- apply(expr, 2, scale)
+mat_dist <- dist(expr[, 4:16]) # here I did not use the FSC and SSC for distance calculation
 
-```{r}
-pheatmap(
-  mat               = expr[1:100,4:16],
-  color             = inferno(10),
-  border_color      = NA,
-  show_colnames     = FALSE,
-  show_rownames     = FALSE,
-  #annotation_col    = mat_col,
-  #annotation_colors = mat_colors,
-  drop_levels       = TRUE,
-  fontsize          = 14,
-  main              = "Default Heatmap"
-)
-```
-
-```{r}
-expr <- data.frame(exprs(fdat))
-expr_scaled <- apply(expr, 2, scale)
-```
-
-
-```{r}
-idx <- sample(1:nrow(expr), floor(0.01 * nrow(expr)))
-pheatmap(
-  mat               = expr[idx, 4:16],
-  color             = inferno(10),
-  border_color      = NA,
-  show_colnames     = FALSE,
-  show_rownames     = FALSE,
-  #annotation_col    = mat_col,
-  #annotation_colors = mat_colors,
-  drop_levels       = TRUE,
-  fontsize          = 14,
-  main              = "Default Heatmap"
-)
-```
-
-
-```{r}
-mat_dist <- dist(expr_scaled[idx, 4:16])
+# convert the distance matrix into similarity matrix
 mat_sim  <- 1 / (as.matrix(mat_dist) + 1)
 diag(mat_sim) <- 0
 ```
 
+Select edges with correlation larger than a specific value (ex: 0.5)
 ```{r}
-cutoff <- 0.5
-adj   <- ifelse(mat_sim > cutoff, 1, 0)
-links <- melt(adj)
-links <- links[links$value == 1, ]
+cutoff <- 0.6
+mat_adj   <- ifelse(mat_sim > cutoff, 1, 0)
+links <- melt(mat_adj) %>% dplyr::filter(value == 1)
 ```
 
-```{r}
+Visualize the network. Each node represents an observation / cell and the cluster of cells could be easily visualized in the network. Note that by setting zoom as TRUE, the network can be moved around and zoomed in/out using the computer mouse.
+```{r, warning=FALSE}
 simpleNetwork(links,
-            #fontSize     = input$fontSize,
-            #charge       = input$charge,
-            linkDistance = 0.001
-            #opacity      = input$opacity)
-)
+            fontSize     =  20,
+            charge       = -10,
+            linkDistance = 10,
+            zoom = TRUE)
 ```
 
-
-```{r}
-#### Load necessary packages and data ####
-data(MisLinks)
-data(MisNodes)
-
-#### Server ####
-server <- function(input, output) {
-
-    output$simple <- renderSimpleNetwork({
-         src <- c("A", "A", "A", "A", "B", "B", "C", "C", "D")
-         target <- c("B", "C", "D", "J", "E", "F", "G", "H", "I")
-         networkData <- data.frame(src, target)
-         simpleNetwork(networkData, opacity = input$opacity)
-    }) # end render SimpleNetwork
-
-    output$force <- renderForceNetwork({
-        forceNetwork(
-            Links = MisLinks, Nodes = MisNodes, Source = "source",
-            Target = "target", Value = "value", NodeID = "name",
-            Group = "group", opacity = input$opacity)
-    }) # end render ForceNetwork
-
-} # end server
-
-#### UI ####
-
-ui <- shinyUI(fluidPage(
-    # title
-    titlePanel("Shiny networkD3 "),
-    
-    # sideLayout
-    sidebarLayout(
-        sidebarPanel(
-        sliderInput(
-            "opacity", "Opacity (not for Sankey)", 0.6, min = 0.1,
-            max = 1, step = .1)
-        ),
-        mainPanel(
-            tabsetPanel(
-            tabPanel("Simple Network", simpleNetworkOutput("simple")),
-            tabPanel("Force Network", forceNetworkOutput("force"))
-            ) # end tabsetPanel
-        ) # end main Panel
-    ) # end sidebarLayout
-)) # end fluidPage & ShinyUI
-
-#### Run ####
-shinyApp(ui = ui, server = server)
-```
-
-```{r}
-library(Rtsne) # Load package
-iris_unique <- unique(iris) # Remove duplicates
-set.seed(42) # Sets seed for reproducibility
-tsne_out <- Rtsne(as.matrix(iris_unique[,1:4])) # Run TSNE
-plot(tsne_out$Y,col=iris_unique$Species) # Plot the result
-```
-
-```{r}
-fdat <- fs_trans_subset10[[1]]
-expr <- exprs(fdat)
-dim(expr)
-```
-
-
-```{r}
-tsne_out = Rtsne(expr[1:2000, ])
-plot(tsne_out$Y)
-```
-
-```{r}
-library(survminer)
-library(survival)
-
-fit <- survfit(Surv(time, status) ~ sex, data = lung)
-ggsurvplot(fit, data = lung)
-```
 
