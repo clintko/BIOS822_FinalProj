@@ -20,7 +20,7 @@ setup directory
 datadir <- "/data/Flow_HIV"
 ```
 
-In this project I have created additional helper functions and organized them into a package
+In this project I have created additional helper functions and organized them into a package. The package is hosted on my Github respository.
 ```{r}
 # install the helper package
 library(devtools)
