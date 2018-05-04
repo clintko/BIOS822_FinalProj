@@ -5,7 +5,7 @@ author: Kuei Yueh (Clint) Ko
 
 # Goal of Final Project
 
-This project is to perform exploratory data analysis on HIV flow cytometry data downloaded from flow repository [1]. The data was published in 2012 [2] and contains fcs file for all 466 patients [3].  
+This project is to perform exploratory data analysis on HIV flow cytometry data downloaded from flow repository [1]. The data was published in 2012 [2] and contains fcs file for 466 patients [3].  
 
 
 # Main Contents
@@ -19,16 +19,16 @@ This project is to perform exploratory data analysis on HIV flow cytometry data 
 
 
 - **Organization** 
-    - The project is clearly divided into four parts, including download, preprocessing, exploring, and user interacting exploration. Note that the functional programming and parallel computing are used in preprocessing.
+    - The project is clearly divided into four parts, including downloading data, preprocessing fcs files, exploratory analysis, and user interacting of data exploration. Note that the functional programming and parallel computing are used in preprocessing.
     
 - **Coding style**
-    - The coding styles follows the guideline provided in [Advanced R](http://adv-r.had.co.nz/). The styles include proper spacing in code statement and proper naming of variables (ex: using underscore instead of camel variable naming). 
+    - The coding style follows the guideline provided in [Advanced R](http://adv-r.had.co.nz/). The styles include proper spacing in code statement and proper naming of variables (ex: using underscore instead of camel variable naming). 
     
 - **Data Visualization & Shiny App**
-    - The visualization includes (pairwise) scatter plot, histogram, denstity plot, heatmap, and network plot. The data arrangement and wrangling are mostly based on dplyr and tidyr. The plotting is mostly done via ggplot package. Most of the data visualization is incorporate into a Shiny App in "*Notebook 04: Using Shiny App to wrap up EDA in notebok 03*"
+    - The visualization includes (pairwise) scatter plot, histogram, denstity plot, heatmap, and network plot. The data arrangement and wrangling are basically based on dplyr and tidyr. The plotting is mostly done via ggplot package or packages required ggplot. The data visualization is further incorporated into a Shiny App in "*Notebook 04: Using Shiny App to wrap up EDA in notebok 03*"
 
 - **R package**
-    - Some important functions required in the project are organized into a package, which is hosted in [the github repository](https://github.com/clintko/bios822FinalProjPackages). Those helper functions wrap up the functions in the flowCore package to preprocess fcs files.  
+    - Some important functions required in the project are organized into a package, which is hosted in [this github repository](https://github.com/clintko/bios822FinalProjPackages). Those helper functions wrap up the functions in the flowCore package to preprocess fcs files in this project.  
     
 
 # Description
@@ -41,12 +41,12 @@ The emission wavelength of different fluorochrome usually overlap to each other.
 The scatter plot of marker CD45Ro vs CD3 in the file 100715.fcs before preprocessing (compensation and transformation). In this visualization before preprocessing, one can notice that the data points are squeezed in the left below corner.
 ![FlowMarker before](/Figs/marker_CD45RO_CD3_before.png)
 
-The scatter plot of marker CD45Ro vs CD3 in the file 100715.fcs after preprocessing.
+The scatter plot of marker CD45Ro vs CD3 in the file 100715.fcs after preprocessing. Now the data points are no longer heavily skewed distributed.
 ![FlowMarker after](/Figs/marker_CD45RO_CD3_after.png)
 
 ### Clinical data
 
-The data contains survival time and the patient IDs, which correspond to the file name of fcs files.
+The clinical data of study[3] contains survival time and the patient IDs, which correspond to the file name of fcs files.
 
 Visualization of survival time in every patients.
 ![SurvTime](/Figs/clinical01_SurvTime.png)
@@ -61,7 +61,7 @@ The global pattern can be explored using heatmap and dimensional reduction plot.
 Each intensity matrix belongs to [tidy data defined in R for data science](http://r4ds.had.co.nz/tidy-data.html), where each row represents a observation (cell) and each column is a variable (marker). For a sample, a certain fraction of cells were randomly selected for plotting. Here I plotted the first fcs file. In the shiny app, users can choose which file to plot. 
 ![FlowHeatmap](/Figs/heatmap.png)
 
-Dimensional reduction plot allows researcher to visualize the distribution of high dimensional data at lower dimensional space. Here I used t-distributed stochastic neighbor embedding (t-SNE) to reduce the dimension of data. The advantage of t-SNE plot does not use linear transformation to preserved the distance of observation in high dimensional space. Therefore, it is better to visualize the complex pattern compared to other methods that applied linear transformation such as PCA, which applied eigendecomposition to decompose the covariance matris. Unlike PCA, the axes of t-SNE plot does not have obvious meaning, while in PCA, each axes represents a linear combination of variables. In the data visualization below, the color was specified by the intensity of CD3 marker (High: red; Low: blue)
+Dimensional reduction plot allows researcher to visualize the distribution of high dimensional data at lower dimensional space. Here I used t-distributed stochastic neighbor embedding (t-SNE) to reduce the dimension of data. The advantage of t-SNE plot does not use linear transformation to preserved the distance of observation in high dimensional space. Therefore, it is better to visualize the complex pattern compared to other methods that applied linear transformation such as PCA, which applied eigendecomposition to decompose the covariance matris. Unlike PCA, the axes of t-SNE plot does not have obvious meaning, while in PCA, each axes represents a linear combination of variables. In the data visualization below, the color was specified by the intensity of CD3 marker (High: red; Low: blue) In this plot, we do not observe any specific pattern in the intesity of CD3 marker and distribution of data points.
 ![FlowTSNE](/Figs/tsne_plot01.png)
 
 
@@ -70,7 +70,7 @@ Dimensional reduction plot allows researcher to visualize the distribution of hi
 Density plot of each marker in the sample "100715"
 ![FlowMarker Summary](/Figs/marker_summary.png)
 
-Pairwise scatter plot of markers in the sample "100715"
+Pairwise scatter plot of markers in the sample "100715".
 ![FlowMarker pairwise](/Figs/pairwise_plot.png)
 
 
@@ -86,17 +86,19 @@ The [CD3 marker](https://en.wikipedia.org/wiki/CD3_(immunology)) is a co-recepto
 
 **Visualize clincal information in scatter plots**
 
-Scatter plots between CD45RO and CD3 in multiple samples.
+The clinical data can be merged with flow cytometry data and visualized in the scatter plots of markers. The clinical information is added into the plot to provide detailed exploration than the plot above.
+
+Here we first show the scatter plots between CD45RO and CD3 in multiple samples.
 ![FlowMarker CD45RO CD3 samples](/Figs/marker_CD45RO_CD3_samples.png)
 
-The clinical data can be merged with flow cytometry data and visualized in the scatter plots of markers. The clinical information is added into the plot to provide detailed exploration than the plot above. Note that to simplified the plot, only the 50% of the cell proportion in 1st quadrant was visualized in each sample.
+The survival time can be visualized on the scatter plot where all the samples are merged together. Note that to simplified the plot, only the 50% of the cell proportion in 1st quadrant was visualized in each sample.
 ![FlowMarker CD45RO CD3 SurvTime](/Figs/marker_CD45RO_CD3_SurvTime.png)
 
 
 ### Construct sample network
-In the heatmap and scatter plot, it may not be easy to visualize the relationship among cells / observations. In this section, I used a different perspective to explore a cell population. For a sample, I first compared the cells (observations; rows) using correlation as distance function. The distance matrix was then converted to simiality matrix and further converted into adjacency matrix of a network by selecting an arbitrary cutoff value (which can be specify easily in the shiny app).
+In the heatmap and scatter plot, it may not be easy to visualize the relationship among cells / observations. In this section, I used a different perspective to explore a cell population. For a sample, I first compared the cells (observations; rows) using correlation as distance function. The distance matrix was then converted to simiality matrix and further converted into adjacency matrix of a network by selecting an arbitrary cutoff value (which can be specify easily in the shiny app). Note that I plotted one fcs file in this section. In the shiny app, users are allowed to choose any fcs file / sample.
 
-Note that I plotted one fcs file in this section. In the shiny app, users are allowed to choose any fcs file / sample.
+In the figure below, each node represents an observation / cell and the cluster of cells could be easily visualized in the network. Note that by setting zoom as TRUE, the network in the notebook can be moved around and zoomed in/out using the computer mouse.
 ![FlowNetwork](/Figs/network_cell.png)
 
 
