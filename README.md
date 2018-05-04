@@ -5,7 +5,7 @@ author: Kuei Yueh (Clint) Ko
 
 # Goal of Final Project
 
-This project is to perform exploratory data analysis
+This project is to perform exploratory data analysis on HIV flow cytometry data downloaded from flow repository [1]. The data was published in 2012 [2] and contains fcs file for all 466 patients [3].  
 
 
 # Main Contents
@@ -17,18 +17,20 @@ This project is to perform exploratory data analysis
 
 # Features
 
-In this project,
+This project contains:
 
-- Organization, readability and coherence
-- Adherence to R guidelines for spacing, variable and function names
-- Earth (Orbit/Moon)
-- Mars
-- Jupiter
-- Data munging (wrangling) using dplyr
-- Visualization with ggplot
-- Visualization using Shiny R
-- R package
+- Organization: 
+    - The project is clearly divided into four parts, including download, preprocessing, exploring, and user interacting exploration. 
+    
+- Coding style
+    - The coding styles follows the guideline provided in [Advanced R](http://adv-r.had.co.nz/). The styles include proper spacing in code statement and proper naming of variables (ex: using underscore instead of camel variable naming).
+    
+- Data Visualization & Shiny App
+    - The visualization includes (pairwise) scatter plot, histogram, denstity plot, heatmap, and network plot. The data arrangement and wrangling are mostly based on dplyr and tidyr. The plotting is mostly done via ggplot package..
 
+- R package: 
+    - Some important functions required in the project are organized into a package, which is hosted in [the github repository](https://github.com/clintko/bios822FinalProjPackages). Those helper functions wrap up the functions in the flowCore package to preprocess fcs files.  
+    
 
 # Description
 ![SurvTime](/Figs/clinical01_SurvTime.png "SurvTime")
@@ -43,3 +45,7 @@ In this project,
 ![SurvTime](/Figs/network_cell.png)
 ![SurvTime](/Figs/pairwise_plot.png)
 ![SurvTime](/Figs/tsne_plot01.png)
+
+[1] Data Download Link: http://flowrepository.org/id/FR-FCM-ZZZK
+[2] Aghaeepour N (2012) IDCRP's HIV Natural History Study data set.
+[3] Aghaeepour N (2012) Early immunologic correlates of HIV protection can be identified from computational analysis of complex multivariate T-cell flow cytometry assays
