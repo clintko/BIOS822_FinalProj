@@ -191,6 +191,10 @@ library(FlowRepositoryR)</code></pre>
 <p>setup directory</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBUaGUgZGlyZWN0b3J5IHRvIHN0b3JlIHRoZSBkYXRhc2V0XG5kYXRhZGlyIDwtIFwiL2RhdGEvRmxvd19ISVZcIlxuYGBgIn0= -->
+<pre class="r"><code># The directory to store the dataset
+datadir &lt;- &quot;/data/Flow_HIV&quot;</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>In this project I have created additional helper functions and organized them into a package. The package is hosted on my Github respository.</p>
@@ -201,12 +205,13 @@ library(FlowRepositoryR)</code></pre>
 library(devtools)
 install_github(&quot;clintko/bios822FinalProjPackages&quot;, force = TRUE)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRG93bmxvYWRpbmcgR2l0SHViIHJlcG8gY2xpbnRrby9iaW9zODIyRmluYWxQcm9qUGFja2FnZXNAbWFzdGVyXG5mcm9tIFVSTCBodHRwczovL2FwaS5naXRodWIuY29tL3JlcG9zL2NsaW50a28vYmlvczgyMkZpbmFsUHJvalBhY2thZ2VzL3ppcGJhbGwvbWFzdGVyXG5JbnN0YWxsaW5nIGJpb3M4MjJGaW5hbFByb2pQYWNrYWdlc1xuJy91c3IvbGliL1IvYmluL1InIC0tbm8tc2l0ZS1maWxlIC0tbm8tZW52aXJvbiAtLW5vLXNhdmUgLS1uby1yZXN0b3JlIC0tcXVpZXQgQ01EIElOU1RBTEwgIFxcXG4gICcvdG1wL1J0bXB2dG4zVncvZGV2dG9vbHMzYWFjNjY5NTEzMWEvY2xpbnRrby1iaW9zODIyRmluYWxQcm9qUGFja2FnZXMtYmNlNDYyNycgIFxcXG4gIC0tbGlicmFyeT0nL2hvbWUvY2xpbnQvUi94ODZfNjQtcGMtbGludXgtZ251LWxpYnJhcnkvMy40JyAtLWluc3RhbGwtdGVzdHMgXG5cbiogaW5zdGFsbGluZyAqc291cmNlKiBwYWNrYWdlIOKAmGJpb3M4MjJGaW5hbFByb2pQYWNrYWdlc+KAmSAuLi5cbioqIFJcbioqIHByZXBhcmluZyBwYWNrYWdlIGZvciBsYXp5IGxvYWRpbmdcbioqIGhlbHBcbioqKiBpbnN0YWxsaW5nIGhlbHAgaW5kaWNlc1xuKiogYnVpbGRpbmcgcGFja2FnZSBpbmRpY2VzXG4qKiB0ZXN0aW5nIGlmIGluc3RhbGxlZCBwYWNrYWdlIGNhbiBiZSBsb2FkZWRcbiogRE9ORSAoYmlvczgyMkZpbmFsUHJvalBhY2thZ2VzKVxuUmVsb2FkaW5nIGluc3RhbGxlZCBiaW9zODIyRmluYWxQcm9qUGFja2FnZXNcbiJ9 -->
+<!-- rnb-output-begin eyJkYXRhIjoiRG93bmxvYWRpbmcgR2l0SHViIHJlcG8gY2xpbnRrby9iaW9zODIyRmluYWxQcm9qUGFja2FnZXNAbWFzdGVyXG5mcm9tIFVSTCBodHRwczovL2FwaS5naXRodWIuY29tL3JlcG9zL2NsaW50a28vYmlvczgyMkZpbmFsUHJvalBhY2thZ2VzL3ppcGJhbGwvbWFzdGVyXG5JbnN0YWxsaW5nIGJpb3M4MjJGaW5hbFByb2pQYWNrYWdlc1xuJy91c3IvbGliL1IvYmluL1InIC0tbm8tc2l0ZS1maWxlIC0tbm8tZW52aXJvbiAtLW5vLXNhdmUgLS1uby1yZXN0b3JlIC0tcXVpZXQgQ01EICBcXFxuICBJTlNUQUxMICBcXFxuICAnL3RtcC9SdG1wNkRWc1hoL2RldnRvb2xzMzkyMTU0NDEyNTRmL2NsaW50a28tYmlvczgyMkZpbmFsUHJvalBhY2thZ2VzLTg0M2Y5ODInICBcXFxuICAtLWxpYnJhcnk9Jy9ob21lL2NsaW50L1IveDg2XzY0LXBjLWxpbnV4LWdudS1saWJyYXJ5LzMuNCcgLS1pbnN0YWxsLXRlc3RzIFxuXG4qIGluc3RhbGxpbmcgKnNvdXJjZSogcGFja2FnZSDigJhiaW9zODIyRmluYWxQcm9qUGFja2FnZXPigJkgLi4uXG4qKiBSXG4qKiBwcmVwYXJpbmcgcGFja2FnZSBmb3IgbGF6eSBsb2FkaW5nXG4qKiBoZWxwXG4qKiogaW5zdGFsbGluZyBoZWxwIGluZGljZXNcbioqIGJ1aWxkaW5nIHBhY2thZ2UgaW5kaWNlc1xuKiogdGVzdGluZyBpZiBpbnN0YWxsZWQgcGFja2FnZSBjYW4gYmUgbG9hZGVkXG4qIERPTkUgKGJpb3M4MjJGaW5hbFByb2pQYWNrYWdlcylcbiJ9 -->
 <pre><code>Downloading GitHub repo clintko/bios822FinalProjPackages@master
 from URL https://api.github.com/repos/clintko/bios822FinalProjPackages/zipball/master
 Installing bios822FinalProjPackages
-'/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet CMD INSTALL  \
-  '/tmp/Rtmpvtn3Vw/devtools3aac6695131a/clintko-bios822FinalProjPackages-bce4627'  \
+'/usr/lib/R/bin/R' --no-site-file --no-environ --no-save --no-restore --quiet CMD  \
+  INSTALL  \
+  '/tmp/Rtmp6DVsXh/devtools39215441254f/clintko-bios822FinalProjPackages-843f982'  \
   --library='/home/clint/R/x86_64-pc-linux-gnu-library/3.4' --install-tests 
 
 * installing *source* package ‘bios822FinalProjPackages’ ...
@@ -216,8 +221,7 @@ Installing bios822FinalProjPackages
 *** installing help indices
 ** building package indices
 ** testing if installed package can be loaded
-* DONE (bios822FinalProjPackages)
-Reloading installed bios822FinalProjPackages</code></pre>
+* DONE (bios822FinalProjPackages)</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBpbXBvcnQgdGhlIGxpYnJhcnlcbmxpYnJhcnkoYmlvczgyMkZpbmFsUHJvalBhY2thZ2VzKVxuIyBDaGVjayBpZiB0aGUgcGFja2FnZSBpcyBpbnN0YWxsZWQuXG5oZWxsbygpXG5gYGAifQ== -->
 <pre class="r"><code># import the library
@@ -434,11 +438,19 @@ save(fs, file=file.path(datadir, &quot;FlowHIV_Raw.RData&quot;))</code></pre>
 <p>In addition, I have read a subset of fcs files for demontration.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyByZWFkIGluIHRoZSBmaXJzdCAxMCBmaWxlc1xuZnNfc3ViIDwtIHJlYWQuZmxvd1NldChmaWxlLnBhdGgoZGF0YWRpciwgZmNsaXN0WzE6MTBdKSwgdHJhbnNmb3JtYXRpb24gPSBGQUxTRSlcbmBgYCJ9 -->
+<pre class="r"><code># read in the first 10 files
+fs_sub &lt;- read.flowSet(file.path(datadir, fclist[1:10]), transformation = FALSE)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Store the result</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBzYXZlIHRoZSBzdWItZGF0YXNldCBpbnRvIGEgd29ya3NwYWNlXG5zYXZlKGZzX3N1YiwgZmlsZT1maWxlLnBhdGgoZGF0YWRpciwgXCJGbG93SElWX1Jhd19zdWJzZXQxMC5SRGF0YVwiKSlcbmBgYCJ9 -->
+<pre class="r"><code># save the sub-dataset into a workspace
+save(fs_sub, file=file.path(datadir, &quot;FlowHIV_Raw_subset10.RData&quot;))</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 </div>
 
