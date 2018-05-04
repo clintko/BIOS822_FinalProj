@@ -33,7 +33,7 @@ This project contains:
     
 
 # Description
-Below are some descriptions and figures plotted in the projects. 
+Below are some descriptions and figures plotted in the projects. More details are in the R notebooks of the project.
 
 ### Preprocessing (Compensation and Transformation)
 
@@ -75,7 +75,7 @@ Pairwise scatter plot of markers in the sample "100715"
 ![FlowMarker pairwise](/Figs/pairwise_plot.png)
 
 
-### Comparing markers of different fcs files
+### Comparing markers in different fcs files
 
 The density plot of one marker (ex: CD3) in different samples
 ![FlowMarker summary CD3](/Figs/marker_summary_CD3.png)
@@ -85,12 +85,12 @@ The density plot of one marker (ex: CD3) in different samples
 The [CD3 marker](https://en.wikipedia.org/wiki/CD3_(immunology)) is a co-receptor specific to T-cells. CD3 is involved in T-cells activation, including cytotoxic T-cells (CD8+) and helper T-cells (CD4+). Therefore, the possible T-cells can be selected by selecting high intensity of the CD3 marker. 
 ![FlowGate](/Figs/flow_gating.png)
 
-**Visualize clincal informal in scatter plots**
+**Visualize clincal information in scatter plots**
 
 Scatter plots between CD45RO and CD3 in multiple samples.
 ![FlowMarker CD45RO CD3 samples](/Figs/marker_CD45RO_CD3_samples.png)
 
-The clinical data Merge the data to plot them in one figure. The clinical information is added into the plot to provide detailed exploration than the plot above. Note that to simplified the plot, only the 50% of the cell proportion in 1st quadrant was visualized in each sample.
+The clinical data can be merged with flow cytometry data and visualized with the scatter plots. The clinical information is added into the plot to provide detailed exploration than the plot above. Note that to simplified the plot, only the 50% of the cell proportion in 1st quadrant was visualized in each sample.
 ![FlowMarker CD45RO CD3 SurvTime](/Figs/marker_CD45RO_CD3_SurvTime.png)
 
 
