@@ -17,7 +17,6 @@ This project is to perform exploratory data analysis on HIV flow cytometry data 
 
 # Features
 
-This project contains:
 
 - **Organization** 
     - The project is clearly divided into four parts, including download, preprocessing, exploring, and user interacting exploration. Note that the functional programming and parallel computing are used in preprocessing.
