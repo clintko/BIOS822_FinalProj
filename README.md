@@ -65,26 +65,33 @@ Each intensity matrix belongs to [tidy data defined in R for data science](http:
 Dimensional reduction plot allows researcher to visualize the distribution of high dimensional data at lower dimensional space. Here I used t-distributed stochastic neighbor embedding (t-SNE) to reduce the dimension of data. The advantage of t-SNE plot does not use linear transformation to preserved the distance of observation in high dimensional space. Therefore, it is better to visualize the complex pattern compared to other methods that applied linear transformation such as PCA, which applied eigendecomposition to decompose the covariance matris. Unlike PCA, the axes of t-SNE plot does not have obvious meaning, while in PCA, each axes represents a linear combination of variables. In the data visualization below, the color was specified by the intensity of CD3 marker (High: red; Low: blue)
 ![FlowTSNE](/Figs/tsne_plot01.png)
 
+
 ### Exploring Markers distribution in one sample
 
 Density plot of each marker in the sample "100715"
-![FlowMarker](/Figs/marker_summary.png)
+![FlowMarker Summary](/Figs/marker_summary.png)
 
 Pairwise scatter plot of markers in the sample "100715"
 ![FlowMarker pairwise](/Figs/pairwise_plot.png)
 
+
 ### Comparing markers of different fcs files
 
-Scatter plots between CD45RO and CD3 in multiple samples.
-![FlowMarker](/Figs/marker_CD45RO_CD3_samples.png)
-
 The density plot of one marker (ex: CD3) in different samples
-![FlowMarker](/Figs/marker_summary_CD3.png)
+![FlowMarker summary CD3](/Figs/marker_summary_CD3.png)
 
 **Gating in Flow Cytometry Analysis**
 
 The [CD3 marker](https://en.wikipedia.org/wiki/CD3_(immunology)) is a co-receptor specific to T-cells. CD3 is involved in T-cells activation, including cytotoxic T-cells (CD8+) and helper T-cells (CD4+). Therefore, the possible T-cells can be selected by selecting high intensity of the CD3 marker. 
 ![FlowGate](/Figs/flow_gating.png)
+
+**Visualize clincal informal in scatter plots**
+
+Scatter plots between CD45RO and CD3 in multiple samples.
+![FlowMarker CD45RO CD3 samples](/Figs/marker_CD45RO_CD3_samples.png)
+
+The clinical data Merge the data to plot them in one figure. The clinical information is added into the plot to provide detailed exploration than the plot above. Note that to simplified the plot, only the 50% of the cell proportion in 1st quadrant was visualized in each sample.
+![FlowMarker CD45RO CD3 SurvTime](/Figs/marker_CD45RO_CD3_SurvTime.png)
 
 
 ### Construct sample network
