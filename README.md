@@ -61,7 +61,7 @@ The scatter plot of marker CD45Ro vs CD3 in the file 100715.fcs after preprocess
 ![FlowNetwork](/Figs/network_cell.png)
 
 
-
-[1] Data Download Link: http://flowrepository.org/id/FR-FCM-ZZZK
-[2] Aghaeepour N (2012) IDCRP's HIV Natural History Study data set.
-[3] Aghaeepour N (2012) Early immunologic correlates of HIV protection can be identified from computational analysis of complex multivariate T-cell flow cytometry assays
+# Reference
+- [1] Data Download Link: http://flowrepository.org/id/FR-FCM-ZZZK
+- [2] Aghaeepour N (2012) IDCRP's HIV Natural History Study data set.
+- [3] Aghaeepour N (2012) Early immunologic correlates of HIV protection can be identified from computational analysis of complex multivariate T-cell flow cytometry assays
