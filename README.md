@@ -89,7 +89,7 @@ The [CD3 marker](https://en.wikipedia.org/wiki/CD3_(immunology)) is a co-recepto
 Scatter plots between CD45RO and CD3 in multiple samples.
 ![FlowMarker CD45RO CD3 samples](/Figs/marker_CD45RO_CD3_samples.png)
 
-The clinical data can be merged with flow cytometry data and visualized with the scatter plots. The clinical information is added into the plot to provide detailed exploration than the plot above. Note that to simplified the plot, only the 50% of the cell proportion in 1st quadrant was visualized in each sample.
+The clinical data can be merged with flow cytometry data and visualized in the scatter plots of markers. The clinical information is added into the plot to provide detailed exploration than the plot above. Note that to simplified the plot, only the 50% of the cell proportion in 1st quadrant was visualized in each sample.
 ![FlowMarker CD45RO CD3 SurvTime](/Figs/marker_CD45RO_CD3_SurvTime.png)
 
 
