@@ -25,7 +25,7 @@ This project is to perform exploratory data analysis on HIV flow cytometry data 
     - The coding style follows the guideline provided in [Advanced R](http://adv-r.had.co.nz/). The styles include proper spacing in code statement and proper naming of variables (ex: using underscore instead of camel variable naming). 
     
 - **Data Visualization & Shiny App**
-    - The visualization includes (pairwise) scatter plot, histogram, denstity plot, heatmap, and network plot. The data arrangement and wrangling are basically based on dplyr and tidyr. The plotting is mostly done via ggplot package or packages required ggplot. The data visualization is further incorporated into a Shiny App in "*Notebook 04: Using Shiny App to wrap up EDA in notebok 03*"
+    - The visualization includes (pairwise) scatter plot, histogram, density plot, heatmap, and network plot. The data arrangement and wrangling are basically based on dplyr and tidyr. The plotting is mostly done via ggplot package or packages required ggplot. The data visualization is further incorporated into a Shiny App in "*Notebook 04: Using Shiny App to wrap up EDA in notebok 03*"
 
 - **R package**
     - Some important functions required in the project are organized into a package, which is hosted in [this github repository](https://github.com/clintko/bios822FinalProjPackages). Those helper functions wrap up the functions in the flowCore package to preprocess fcs files in this project.  
